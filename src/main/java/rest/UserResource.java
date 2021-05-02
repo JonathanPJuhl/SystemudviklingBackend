@@ -3,30 +3,32 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import entities.User;
-import java.util.List;
+import facades.UserFacade;
+import utils.EMF_Creator;
+import utils.SetupTestUsers;
+
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
-
-import facades.UserFacade;
-import utils.EMF_Creator;
-import utils.SetupTestUsers;
+import javax.ws.rs.core.UriInfo;
+import java.nio.channels.UnresolvedAddressException;
+import java.util.List;
 
 /**
  * @author lam@cphbusiness.dk
  */
-@Path("info")
-public class DemoResource {
+@Path("user")
+public class UserResource {
     
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     private static UserFacade facade = UserFacade.getUserFacade(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
     @Context
     private UriInfo context;
 
@@ -40,19 +42,18 @@ public class DemoResource {
     }
 
     //Just to verify if the database is setup
-    @GET
+    @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("all")
-    public String allUsers() {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("create")
+    public String createUser(String user) {
+        System.out.println(user);
+        User userForCreation = GSON.fromJson(user, User.class);
 
-        EntityManager em = EMF.createEntityManager();
-        try {
-            TypedQuery<User> query = em.createQuery ("select u from User u",entities.User.class);
-            List<User> users = query.getResultList();
-            return "[" + users.size() + "]";
-        } finally {
-            em.close();
-        }
+
+       User userForReturn = facade.createUser(userForCreation);
+
+        return GSON.toJson(userForReturn);
     }
 
         @GET

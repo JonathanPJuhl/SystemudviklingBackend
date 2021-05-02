@@ -7,7 +7,7 @@
         <packaging>war</packaging>
       </options>
     </properties>
-    <root id="archive" name="ca3-1.0.1.war">
+    <root id="archive" name="sys-1.0.1.war">
       <element id="artifact" artifact-name="devops-starter:war exploded" />
     </root>
   </artifact>

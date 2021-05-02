@@ -45,35 +45,30 @@ public class UserFacade {
         return user;
     }
 
-    public void createUser(User user) {
-        EntityManagerFactory emf = EMF_Creator.createEntityManagerFactory();
+    public User createUser(User user) {
+
         EntityManager em = emf.createEntityManager();
 
-        // IMPORTAAAAAAAAAANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // This breaks one of the MOST fundamental security rules in that it ships with default users and passwords
-        // CHANGE the three passwords below, before you uncomment and execute the code below
-        // Also, either delete this file, when users are created or rename and add to .gitignore
-        // Whatever you do DO NOT COMMIT and PUSH with the real passwords
 
-        User userforPersist = user;
-        //User admin = new User("admin", "admintest");
-        //User both = new User("user_admin", "bothtest");
+
+        System.out.println(user.toString());
+        User userforPersist = new User(user.getUsername(), user.getPassword(), user.getRecoveryquestion(), user.getAnswer());
+
 
 
 
         em.getTransaction().begin();
-        Role userRole = new Role("user");
-        Role adminRole = new Role("admin");
-        user.addRole(userRole);
-        user.addRole(adminRole);
 
-        em.persist(userRole);
-        em.persist(adminRole);
-        em.persist(user);
+        Role userRole = new Role("user");
+
+        userforPersist.addRole(userRole);
+
+
+        em.persist(userforPersist);
 
 
         em.getTransaction().commit();
-
+        return userforPersist;
     }
     }
 
