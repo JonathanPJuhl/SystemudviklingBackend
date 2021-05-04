@@ -37,15 +37,12 @@ public class FiveThingsResource {
 
     @GET
     @Path("/teachersSolution")
-    @RolesAllowed({"user", "admin"})
+
     @Produces({MediaType.APPLICATION_JSON})
     public String teacherSolution() throws IOException {
-        String firstFetch = fetchData("https://swapi.dev/api/people/1/");
-        String firstFetch1 = fetchData("https://swapi.dev/api/people/2/");
-        String firstFetch2 = fetchData("https://swapi.dev/api/people/3/");
-        String firstFetch3 = fetchData("https://swapi.dev/api/people/4/");
-        String firstFetch4 = fetchData("https://swapi.dev/api/people/5/");
-        return "["+firstFetch+",\n\n\n\n"+firstFetch1+",\n\n\n\n"+firstFetch2+",\n\n\n\n"+firstFetch3+",\n\n\n\n"+firstFetch4+"]";
+        String firstFetch = fetchData("https://api.marketstack.com/v1/exchanges?access_key=5feeee1a869fedc6e6e24e62c735bc22");
+
+        return "["+firstFetch+"]";
 
     }
 
@@ -55,7 +52,7 @@ public class FiveThingsResource {
         con.setRequestMethod("GET");
         //con.setRequestProperty("Accept", "application/json;charset=UTF-8");
         con.setRequestProperty("Accept", "application/json");
-        con.setRequestProperty("User-Agent", "server"); //remember if you are using SWAPI
+        //con.setRequestProperty("User-Agent", "server"); //remember if you are using SWAPI
         Scanner scan = new Scanner(con.getInputStream());
         String jsonStr = "";
         while(scan.hasNext()) {

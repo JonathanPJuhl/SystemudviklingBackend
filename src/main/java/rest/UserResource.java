@@ -62,17 +62,9 @@ public class UserResource {
         @RolesAllowed({"user"})
         public String getFromUser() {
             String thisuser = securityContext.getUserPrincipal().getName();
-            return "{\"msg\": \"Hello to User: " + thisuser + "\"}";
+            return "{\"msg\": \"Welcome " + thisuser + "\"}";
         }
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("admin")
-    @RolesAllowed("admin")
-    public String getFromAdmin() {
-        String thisuser = securityContext.getUserPrincipal().getName();
-        return "{\"msg\": \"Hello to (admin) User: " + thisuser + "\"}";
-    }
 
     @GET
     @Path("populate")
