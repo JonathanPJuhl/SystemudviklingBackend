@@ -47,7 +47,7 @@ public class User implements Serializable {
 
   @JoinTable(name = "user_stock_choices", joinColumns = {
           @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
-          @JoinColumn(name = "stock_id", referencedColumnName = "stock_id")})
+          @JoinColumn(name = "stock_ticker", referencedColumnName = "stock_ticker")})
   @ManyToMany
   private List<Stock> stockList = new ArrayList<Stock>();
 

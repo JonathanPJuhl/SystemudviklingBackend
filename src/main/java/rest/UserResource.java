@@ -11,6 +11,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -62,6 +63,7 @@ public class UserResource {
         @RolesAllowed({"user"})
         public String getFromUser() {
             String thisuser = securityContext.getUserPrincipal().getName();
+
             return "{\"msg\": \"Welcome " + thisuser + "\"}";
         }
 

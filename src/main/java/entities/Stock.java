@@ -19,18 +19,9 @@ public class Stock implements Serializable {
     @Id
     @Basic(optional = false)
     @NotNull
-    @Column(name = "stock_id", length = 25)
-    private int stockId;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "stock_name")
-    private String stockName;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "stock_link")
-    private String stockLink;
+    @Column(name = "stock_ticker", length = 25)
+    private String stockTicker;
+
 
     @ManyToMany(mappedBy = "stockList")
     private List<User> userList;
@@ -38,33 +29,16 @@ public class Stock implements Serializable {
     public Stock() {
     }
 
-    public Stock( String stockName, String stockLink) {
-        this.stockName = stockName;
-        this.stockLink = stockLink;
+    public Stock(String stockTicker) {
+        this.stockTicker = stockTicker;
     }
 
-    public int getStockId() {
-        return stockId;
+    public String getStockTicker() {
+        return stockTicker;
     }
 
-    public void setStockId(int stockId) {
-        this.stockId = stockId;
-    }
-
-    public String getStockName() {
-        return stockName;
-    }
-
-    public void setStockName(String stockName) {
-        this.stockName = stockName;
-    }
-
-    public String getStockLink() {
-        return stockLink;
-    }
-
-    public void setStockLink(String stockLink) {
-        this.stockLink = stockLink;
+    public void setStockTicker(String stockTicker) {
+        this.stockTicker = stockTicker;
     }
 
     public List<User> getUserList() {
@@ -75,6 +49,12 @@ public class Stock implements Serializable {
         this.userList = userList;
     }
 
-    //TODO Change when password is hashed
+    @Override
+    public String toString() {
+        return "Stock{" +
+                "stockTicker=\'" + stockTicker + '\'' +
+                '}';
+    }
+//TODO Change when password is hashed
 
 }

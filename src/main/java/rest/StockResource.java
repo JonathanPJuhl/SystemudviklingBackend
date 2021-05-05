@@ -2,6 +2,7 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import entities.Stock;
 import entities.User;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
+import facades.StockFacade;
 import facades.UserFacade;
 import utils.EMF_Creator;
 import utils.SetupTestUsers;
@@ -21,12 +23,12 @@ import utils.SetupTestUsers;
 /**
  * @author lam@cphbusiness.dk
  */
-@Path("info")
-public class DemoResource {
+@Path("stock")
+public class StockResource {
     
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
-    private static UserFacade facade = UserFacade.getUserFacade(EMF);
-    private static final Gson GSON = new    GsonBuilder().setPrettyPrinting().create();
+    private static StockFacade facade = StockFacade.getFacadeExample(EMF);
+    private static final Gson GSON = new  GsonBuilder().setPrettyPrinting().create();
     @Context
     private UriInfo context;
 
@@ -82,13 +84,19 @@ public class DemoResource {
        s.populate();
         return "Success";
     }
- /*   @POST
-    @Path("create")
+    @POST
+    @Path("pin")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String addPerson(String json) {
-        PersonDTO persDTO = GSON.fromJson(json, PersonDTO.class);
-        PersonDTO persistedPers = FACADE.create(persDTO);
-        return GSON.toJson(persistedPers);
-    }*/
+    public String addStockToPerson(String stockTicker) {
+        String str = stockTicker.substring(1, stockTicker.length() - 1);
+        String[] thisUser = str.split(",");
+        String ticker = thisUser[0];
+        String user = thisUser[1];
+        System.out.println(ticker+"   " + user);
+       /* System.out.println(stockTicker);
+        Stock ticker = GSON.fromJson(stockTicker, Stock.class);*/
+        facade.AddToDb(ticker, user);
+        return "Added stock to pins";
+    }
 }

@@ -4,6 +4,8 @@ import entities.Role;
 import entities.User;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.TypedQuery;
+
 import security.errorhandling.AuthenticationException;
 import utils.EMF_Creator;
 
@@ -70,5 +72,23 @@ public class UserFacade {
         em.getTransaction().commit();
         return userforPersist;
     }
+    public User findUserByUsername(String username){
+        EntityManager em = emf.createEntityManager();
+
+        User userFound;
+        try {
+        em.getTransaction().begin();
+        TypedQuery<User> user = em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class);
+        user.setParameter("username", username);
+        em.getTransaction().commit();
+
+        userFound = user.getSingleResult();}
+        finally{
+        em.close();
+        }
+
+        return userFound;
+    }
+
     }
 
