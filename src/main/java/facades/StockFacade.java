@@ -5,6 +5,10 @@ import entities.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -14,6 +18,7 @@ public class StockFacade {
 
     private static StockFacade instance;
     private static EntityManagerFactory emf;
+    private UserFacade facade = UserFacade.getUserFacade(emf);
     
     //Private Constructor to ensure Singleton
     private StockFacade() {}
@@ -68,5 +73,23 @@ public class StockFacade {
         }finally{
             em.close();
         }
+    }
+
+    public User getPinnedStocks(String username) {
+        EntityManager em = emf.createEntityManager();
+        System.out.println(username);
+
+        User user = em.find(User.class, username);
+        List<Stock> stocks=user.getStockList();
+
+       /* for(int i=0; i<user2.size()-1;i++){
+            stocks.add(new Stock(user2.get(i)));
+        }*/
+
+            em.close();
+
+
+
+        return user;
     }
 }

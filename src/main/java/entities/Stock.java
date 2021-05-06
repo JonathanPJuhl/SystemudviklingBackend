@@ -29,6 +29,7 @@ public class Stock implements Serializable {
     public Stock() {
     }
 
+
     public Stock(String stockTicker) {
         this.stockTicker = stockTicker;
     }

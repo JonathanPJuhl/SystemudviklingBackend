@@ -67,12 +67,13 @@ public class StockResource {
         }
 
     @GET
+    @Path("pinned/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("admin")
-    @RolesAllowed("admin")
-    public String getFromAdmin() {
-        String thisuser = securityContext.getUserPrincipal().getName();
-        return "{\"msg\": \"Hello to (admin) User: " + thisuser + "\"}";
+    @Consumes(MediaType.APPLICATION_JSON)
+    //@RolesAllowed("user")
+    public String getFromAdmin(@PathParam("username") String username) {
+        /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
+        return GSON.toJson(facade.getPinnedStocks(username));
     }
 
     @GET
