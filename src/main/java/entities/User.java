@@ -72,6 +72,7 @@ public class User implements Serializable {
   public User(String username, String password) {
     this.username = username;
     this.password = BCrypt.hashpw(password, BCrypt.gensalt());
+
   }
 
   public User( String username,String password, String recoveryquestion, String answer) {

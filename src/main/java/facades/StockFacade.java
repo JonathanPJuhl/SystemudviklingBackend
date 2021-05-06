@@ -75,21 +75,24 @@ public class StockFacade {
         }
     }
 
-    public User getPinnedStocks(String username) {
+    public List<String> getPinnedStocks(String username) {
         EntityManager em = emf.createEntityManager();
         System.out.println(username);
 
-        User user = em.find(User.class, username);
-        List<Stock> stocks=user.getStockList();
+        Query stocks = em.createQuery("SELECT s.stockTicker from Stock s join s.userList u where u.username = :username");
+        stocks.setParameter("username", username);
+        //User user = em.find(User.class, username);
+       // List<Stock> stocks=user.getStockList();
 
        /* for(int i=0; i<user2.size()-1;i++){
             stocks.add(new Stock(user2.get(i)));
         }*/
+        List<String> stock = stocks.getResultList();
 
             em.close();
 
 
 
-        return user;
+        return stock;
     }
 }

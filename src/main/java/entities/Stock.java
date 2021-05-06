@@ -32,6 +32,7 @@ public class Stock implements Serializable {
 
     public Stock(String stockTicker) {
         this.stockTicker = stockTicker;
+        this.userList = new ArrayList<>();
     }
 
     public String getStockTicker() {

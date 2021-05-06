@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import entities.Stock;
 import entities.User;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
@@ -71,9 +73,14 @@ public class StockResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     //@RolesAllowed("user")
-    public String getFromAdmin(@PathParam("username") String username) {
+    public String getPinnedByUser(@PathParam("username") String username) {
         /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
-        return GSON.toJson(facade.getPinnedStocks(username));
+        List<String> list = facade.getPinnedStocks(username);
+        List<Stock> list2 = new ArrayList<>();
+        for(int i = 0 ; i<list.size()-1; i++){
+            list2.add(new Stock(list.get(i)));
+        }
+        return GSON.toJson(list2);
     }
 
     @GET
