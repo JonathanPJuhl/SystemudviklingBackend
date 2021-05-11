@@ -2,16 +2,24 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nimbusds.jose.shaded.json.JSONObject;
+
 import entities.PinnedStockDto;
 import entities.Stock;
+import entities.StockSymbol;
 import entities.User;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import javax.annotation.security.RolesAllowed;
@@ -25,7 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
 import facades.StockFacade;
-import facades.UserFacade;
+
 import utils.EMF_Creator;
 import utils.SetupTestUsers;
 
@@ -34,10 +42,10 @@ import utils.SetupTestUsers;
  */
 @Path("stock")
 public class StockResource {
-    
+
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     private static StockFacade facade = StockFacade.getFacadeExample(EMF);
-    private static final Gson GSON = new  GsonBuilder().setPrettyPrinting().create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     @Context
     private UriInfo context;
 
@@ -58,7 +66,7 @@ public class StockResource {
 
         EntityManager em = EMF.createEntityManager();
         try {
-            TypedQuery<User> query = em.createQuery ("select u from User u",entities.User.class);
+            TypedQuery<User> query = em.createQuery("select u from User u", entities.User.class);
             List<User> users = query.getResultList();
             return "[" + users.size() + "]";
         } finally {
@@ -66,14 +74,14 @@ public class StockResource {
         }
     }
 
-        @GET
-        @Produces(MediaType.APPLICATION_JSON)
-        @Path("user")
-        @RolesAllowed({"user"})
-        public String getFromUser() {
-            String thisuser = securityContext.getUserPrincipal().getName();
-            return "{\"msg\": \"Hello to User: " + thisuser + "\"}";
-        }
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("user")
+    @RolesAllowed({"user"})
+    public String getFromUser() {
+        String thisuser = securityContext.getUserPrincipal().getName();
+        return "{\"msg\": \"Hello to User: " + thisuser + "\"}";
+    }
 
     @GET
     @Path("pinned/{username}")
@@ -83,26 +91,28 @@ public class StockResource {
     public String getPinnedByUser(@PathParam("username") String username) {
         /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
         List<String> list = facade.getPinnedStocks(username);
-String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
         String pinned = "";
-        for(int i = 0 ; i<list.size(); i++){
-            try {
-                String pin = fetchData(URL+list.get(i));
-                if(i!=list.size()-1) {
-                    pinned += pin + ",";
-                }else{
-                    pinned += pin;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        for (int i = 0; i < list.size(); i++) {
+            if (i != list.size() - 1) {
+                URL += list.get(i) + ",";
+            } else {
+                URL += list.get(i) ;
             }
 
         }
         // return stocks
+        String pin ="";
+        try {
+            pin = fetchData(URL);
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        return "["+pinned+"]";
+        return "[" + pin + "]";
     }
+
     public String fetchData(String _url) throws MalformedURLException, IOException {
         URL url = new URL(_url);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -114,21 +124,23 @@ String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fe
         //con.setRequestProperty("User-Agent", "server"); //remember if you are using SWAPI
         Scanner scan = new Scanner(con.getInputStream());
         String jsonStr = "";
-        while(scan.hasNext()) {
+        while (scan.hasNext()) {
             jsonStr += scan.nextLine();
         }
         scan.close();
         return jsonStr;
     }
+
     @GET
     @Path("populate")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public String populate() {
-       SetupTestUsers s = new SetupTestUsers();
-       s.populate();
+        SetupTestUsers s = new SetupTestUsers();
+        s.populate();
         return "Success";
     }
+
     @POST
     @Path("pin")
     @Produces(MediaType.APPLICATION_JSON)
@@ -138,10 +150,113 @@ String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fe
         String[] thisUser = str.split(",");
         String ticker = thisUser[0];
         String user = thisUser[1];
-        System.out.println(ticker+"   " + user);
+        System.out.println(ticker + "   " + user);
        /* System.out.println(stockTicker);
         Stock ticker = GSON.fromJson(stockTicker, Stock.class);*/
         facade.AddToDb(ticker, user);
         return "Added stock to pins";
+    }
+
+
+    @GET
+    @Path("topfive")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getTopFive() {
+        /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
+        List<StockSymbol> list = facade.getAllStockTickers();
+        Instant now = Instant.now();
+        String yesterday = now.minus(1, ChronoUnit.DAYS).toString().substring(0,10);
+        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+        String yesterdayURL = "https://api.marketstack.com/v1/eod/"+yesterday+"?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+
+
+
+
+        String pinned = "";
+        String pinnedYesterday = "";
+        for (int i = 0; i < list.size(); i++) {
+            if(i!=list.size()-1) {
+                URL += list.get(i) + ",";
+                yesterdayURL += list.get(i) + ",";
+            } else{
+                URL += list.get(i);
+                yesterdayURL += list.get(i);
+
+            }
+        }
+
+
+            try {
+                pinned = fetchData(URL);
+                pinnedYesterday = fetchData(yesterdayURL);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        JSONObject json = new JSONObject(pinned);  //initial JSONObject (See explanation section below)
+        JSONObject jsonYesterday = new JSONObject(pinnedYesterday);  //initial JSONObject (See explanation section below)
+        JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
+
+        JSONArray jsonArrayYesterday = jsonYesterday.getJSONArray("data");  //"results" JSONArray
+         System.out.println(jsonArrayYesterday.toString());
+        //first JSONObject inside "results" JSONArray
+        HashMap<String, Double> jsonMapToday = new HashMap<>();
+        HashMap<String, Double> jsonMapYesterday = new HashMap<>();
+
+        ArrayList<String> jsonArrayListToday = new ArrayList<>();  //"times" JSONArray
+        ArrayList<String> jsonArrayListYesterday = new ArrayList<>();  //"times" JSONArray
+        System.out.println("LÆNGDE : " + jsonArrayYesterday.length());
+        for (int i = 0; i < jsonArrayYesterday.length(); i++) {
+            JSONObject itemYesterday = jsonArrayYesterday.getJSONObject(i);
+            String symbolYesterday = (String)itemYesterday.get("symbol");
+            Double highYesterday = (Double)itemYesterday.get("high");
+            jsonMapYesterday.put(symbolYesterday, highYesterday);
+        }
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject itemToday = jsonArray.getJSONObject(i);
+            String symbolToday = (String)itemToday.get("symbol");
+            Double highToday = (Double)itemToday.get("high");
+            jsonMapToday.put(symbolToday,highToday);
+        }
+
+        System.out.println("TODAY: " + jsonMapToday.keySet());
+        System.out.println("YESTER" + jsonMapYesterday.keySet());
+            ArrayList<String> biggestGains = facade.getFiveBiggestGains(jsonMapToday, jsonMapYesterday);
+            ArrayList<String> biggestDrops =facade.getFiveBiggestDrops(jsonArrayListToday, jsonArrayListYesterday);
+        System.out.println(biggestGains.toString());
+
+         return GSON.toJson(pinned);
+
+
+        //return "[" + pinned + "]";
+    }
+
+    @GET
+    @Path("fillDBwithTickers")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String fillDb() {
+
+        String data = "";
+        try {
+            data = fetchData("https://api.marketstack.com/v1/tickers?access_key=5feeee1a869fedc6e6e24e62c735bc22");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JSONObject json = new JSONObject(data);  //initial JSONObject (See explanation section below)
+        JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
+         //first JSONObject inside "results" JSONArray
+        ArrayList<String> jsonArrayTimes = new ArrayList<>();  //"times" JSONArray
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject item = jsonArray.getJSONObject(i);
+            String symb = (String)item.get("symbol");
+            System.out.println(symb);
+            if(!symb.contains(".")){
+            jsonArrayTimes.add(symb);}
+        }
+        facade.addStockTickersToDB(jsonArrayTimes);
+        return "success";
     }
 }
