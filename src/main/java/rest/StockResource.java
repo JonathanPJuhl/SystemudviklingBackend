@@ -154,80 +154,80 @@ public class StockResource {
     }
 
 
-    @GET
-    @Path("topfive")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String getTopFive() {
-        /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
-        List<StockSymbol> list = facade.getAllStockTickers();
-        Instant now = Instant.now();
-        String yesterday = now.minus(1, ChronoUnit.DAYS).toString().substring(0,10);
-        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
-        String yesterdayURL = "https://api.marketstack.com/v1/eod/"+yesterday+"?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
-
-
-
-
-        String pinned = "";
-        String pinnedYesterday = "";
-        for (int i = 0; i < list.size(); i++) {
-            if(i!=list.size()-1) {
-                URL += list.get(i) + ",";
-                yesterdayURL += list.get(i) + ",";
-            } else{
-                URL += list.get(i);
-                yesterdayURL += list.get(i);
-
-            }
-        }
-
-
-            try {
-                pinned = fetchData(URL);
-                pinnedYesterday = fetchData(yesterdayURL);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        JSONObject json = new JSONObject(pinned);  //initial JSONObject (See explanation section below)
-        JSONObject jsonYesterday = new JSONObject(pinnedYesterday);  //initial JSONObject (See explanation section below)
-        JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
-
-        JSONArray jsonArrayYesterday = jsonYesterday.getJSONArray("data");  //"results" JSONArray
-         System.out.println(jsonArrayYesterday.toString());
-        //first JSONObject inside "results" JSONArray
-        HashMap<String, Double> jsonMapToday = new HashMap<>();
-        HashMap<String, Double> jsonMapYesterday = new HashMap<>();
-
-        ArrayList<String> jsonArrayListToday = new ArrayList<>();  //"times" JSONArray
-        ArrayList<String> jsonArrayListYesterday = new ArrayList<>();  //"times" JSONArray
-        System.out.println("LÆNGDE : " + jsonArrayYesterday.length());
-        for (int i = 0; i < jsonArrayYesterday.length(); i++) {
-            JSONObject itemYesterday = jsonArrayYesterday.getJSONObject(i);
-            String symbolYesterday = (String)itemYesterday.get("symbol");
-            Double highYesterday = (Double)itemYesterday.get("high");
-            jsonMapYesterday.put(symbolYesterday, highYesterday);
-        }
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject itemToday = jsonArray.getJSONObject(i);
-            String symbolToday = (String)itemToday.get("symbol");
-            Double highToday = (Double)itemToday.get("high");
-            jsonMapToday.put(symbolToday,highToday);
-        }
-
-        System.out.println("TODAY: " + jsonMapToday.keySet());
-        System.out.println("YESTER" + jsonMapYesterday.keySet());
-            ArrayList<String> biggestGains = facade.getFiveBiggestGains(jsonMapToday, jsonMapYesterday);
-            ArrayList<String> biggestDrops =facade.getFiveBiggestDrops(jsonArrayListToday, jsonArrayListYesterday);
-        System.out.println(biggestGains.toString());
-
-         return GSON.toJson(pinned);
-
-
-        //return "[" + pinned + "]";
-    }
+//    @GET
+//    @Path("topfive")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public String getTopFive() {
+//        /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
+//        List<StockSymbol> list = facade.getAllStockTickers();
+//        Instant now = Instant.now();
+//        String yesterday = now.minus(1, ChronoUnit.DAYS).toString().substring(0,10);
+//        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+//        String yesterdayURL = "https://api.marketstack.com/v1/eod/"+yesterday+"?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+//
+//
+//
+//
+//        String pinned = "";
+//        String pinnedYesterday = "";
+//        for (int i = 0; i < list.size(); i++) {
+//            if(i!=list.size()-1) {
+//                URL += list.get(i) + ",";
+//                yesterdayURL += list.get(i) + ",";
+//            } else{
+//                URL += list.get(i);
+//                yesterdayURL += list.get(i);
+//
+//            }
+//        }
+//
+//
+//            try {
+//                pinned = fetchData(URL);
+//                pinnedYesterday = fetchData(yesterdayURL);
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//        JSONObject json = new JSONObject(pinned);  //initial JSONObject (See explanation section below)
+//        JSONObject jsonYesterday = new JSONObject(pinnedYesterday);  //initial JSONObject (See explanation section below)
+//        JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
+//
+//        JSONArray jsonArrayYesterday = jsonYesterday.getJSONArray("data");  //"results" JSONArray
+//         System.out.println(jsonArrayYesterday.toString());
+//        //first JSONObject inside "results" JSONArray
+//        HashMap<String, Double> jsonMapToday = new HashMap<>();
+//        HashMap<String, Double> jsonMapYesterday = new HashMap<>();
+//
+//        ArrayList<String> jsonArrayListToday = new ArrayList<>();  //"times" JSONArray
+//        ArrayList<String> jsonArrayListYesterday = new ArrayList<>();  //"times" JSONArray
+//        System.out.println("LÆNGDE : " + jsonArrayYesterday.length());
+//        for (int i = 0; i < jsonArrayYesterday.length(); i++) {
+//            JSONObject itemYesterday = jsonArrayYesterday.getJSONObject(i);
+//            String symbolYesterday = (String)itemYesterday.get("symbol");
+//            Double highYesterday = (Double)itemYesterday.get("high");
+//            jsonMapYesterday.put(symbolYesterday, highYesterday);
+//        }
+//        for (int i = 0; i < jsonArray.length(); i++) {
+//            JSONObject itemToday = jsonArray.getJSONObject(i);
+//            String symbolToday = (String)itemToday.get("symbol");
+//            Double highToday = (Double)itemToday.get("high");
+//            jsonMapToday.put(symbolToday,highToday);
+//        }
+//
+//        System.out.println("TODAY: " + jsonMapToday.keySet());
+//        System.out.println("YESTER" + jsonMapYesterday.keySet());
+//            ArrayList<String> biggestGains = facade.getFiveBiggestGains(jsonMapToday, jsonMapYesterday);
+//            ArrayList<String> biggestDrops =facade.getFiveBiggestDrops(jsonArrayListToday, jsonArrayListYesterday);
+//        System.out.println(biggestGains.toString());
+//
+//         return GSON.toJson(pinned);
+//
+//
+//        //return "[" + pinned + "]";
+//    }
 
     @GET
     @Path("fillDBwithTickers")

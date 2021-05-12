@@ -135,7 +135,7 @@ public class StockFacade {
 
     }
 
-    public ArrayList<String> getFiveBiggestGains(HashMap<String, Double> pin, HashMap<String, Double> pinYesterday) {
+   /* public ArrayList<String> getFiveBiggestGains(HashMap<String, Double> pin, HashMap<String, Double> pinYesterday) {
         //sammenlign keys fra maps og indsæt kun i array, hvis key er i begge
         ArrayList<String> fiveBiggestGains = new ArrayList();
         fiveBiggestGains.add("a, 0");
@@ -176,10 +176,10 @@ public class StockFacade {
 
         return fiveBiggestGains;
     }
-
-    public ArrayList<String> getFiveBiggestDrops(ArrayList<String> pinned, ArrayList<String> pinnedYesterday) {
+*/
+    /*public ArrayList<String> getFiveBiggestDrops(ArrayList<String> pinned, ArrayList<String> pinnedYesterday) {
         return null;
-    }
+    }*/
     public void addDailyStockRatingsToDB(ArrayList<DailyStockRating> dailyStocks){
         EntityManager em = emf.createEntityManager();
         try{
@@ -195,7 +195,7 @@ public class StockFacade {
     }
     public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend){
         EntityManager em = emf.createEntityManager();
-        List<DailyStockRating> sortedList = new ArrayList<>();
+        List<DailyStockRating> sortedList;
         try{
 
                 em.getTransaction().begin();
