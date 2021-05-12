@@ -1,6 +1,7 @@
 package facades;
 
 import com.nimbusds.jose.shaded.json.JSONObject;
+import entities.DailyStockRating;
 import entities.Stock;
 import entities.StockSymbol;
 import entities.User;
@@ -178,5 +179,38 @@ public class StockFacade {
 
     public ArrayList<String> getFiveBiggestDrops(ArrayList<String> pinned, ArrayList<String> pinnedYesterday) {
         return null;
+    }
+    public void addDailyStockRatingsToDB(ArrayList<DailyStockRating> dailyStocks){
+        EntityManager em = emf.createEntityManager();
+        try{
+            DailyStockRating dR = em.find( DailyStockRating.class, "AAPL");
+            em.getTransaction().begin();
+            for (int i = 0; i<dailyStocks.size(); i++){
+                em.persist(dailyStocks.get(i));
+            }
+            em.getTransaction().commit();
+        }finally {
+            em.close();
+        }
+    }
+    public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend){
+        EntityManager em = emf.createEntityManager();
+        List<DailyStockRating> sortedList = new ArrayList<>();
+        try{
+
+                em.getTransaction().begin();
+                TypedQuery<DailyStockRating> findAllDailyStocksSorted = null;
+                if(ascendOrDescend.equals("ASC")){
+                    findAllDailyStocksSorted = em.createQuery("SELECT d from DailyStockRating d ORDER BY d.rate ASC", DailyStockRating.class);
+                }else if(ascendOrDescend.equals("DESC")){
+                    findAllDailyStocksSorted = em.createQuery("SELECT d from DailyStockRating d ORDER BY d.rate DESC", DailyStockRating.class);
+                }
+                sortedList = findAllDailyStocksSorted.getResultList();
+                em.getTransaction().commit();
+
+        }finally {
+            em.close();
+        }
+        return sortedList;
     }
 }

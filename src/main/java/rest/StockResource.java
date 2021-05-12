@@ -3,10 +3,7 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import entities.PinnedStockDto;
-import entities.Stock;
-import entities.StockSymbol;
-import entities.User;
+import entities.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,11 +14,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -237,10 +233,18 @@ public class StockResource {
     @Path("fillDBwithTickers")
     @Consumes(MediaType.APPLICATION_JSON)
     public String fillDb() {
-
+        List<StockSymbol> list = facade.getAllStockTickers();
+        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
         String data = "";
+        for (int i = 0; i < list.size(); i++) {
+            if(i!=list.size()-1) {
+                URL += list.get(i) + ",";
+            } else{
+                URL += list.get(i);
+            }
+        }
         try {
-            data = fetchData("https://api.marketstack.com/v1/tickers?access_key=5feeee1a869fedc6e6e24e62c735bc22");
+            data = fetchData(URL);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -258,5 +262,58 @@ public class StockResource {
         }
         facade.addStockTickersToDB(jsonArrayTimes);
         return "success";
+    }
+
+    //SHOULD BE FUNCTIONAL
+    @GET
+    @Path("filldbwithdailyratings/{ascordesc}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) {
+        List<DailyStockRating> dR = facade.findFiveHighestGainsOrDropsFromDB("ASC");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String thisDay = LocalDate.now().format(formatter);
+        //Checks if there's been fetched to day already , if there has, it won't do it again
+        if(!dR.get(0).getDate().equals(thisDay)) {
+            String data = "";
+            try {
+                data = fetchData("https://api.marketstack.com/v1/tickers?access_key=5feeee1a869fedc6e6e24e62c735bc22");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            JSONObject json = new JSONObject(data);  //initial JSONObject (See explanation section below)
+            JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
+            //first JSONObject inside "results" JSONArray
+            ArrayList<DailyStockRating> jsonArrayTimes = new ArrayList<>();  //"times" JSONArray
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject item = jsonArray.getJSONObject(i);
+                String symb = (String) item.get("symbol");
+                String date = (String) item.get("date");
+                double close = (double) item.get("close");
+                System.out.println(symb);
+                if (symb.contains(".")) {
+                    jsonArray.remove(i);
+                }
+                if (!symb.contains(".")) {
+                    jsonArrayTimes.add(new DailyStockRating(symb, date, close));
+                }
+            }
+            //sorting the two arrays to get them in same order, before claculating the daily rate
+            Collections.sort(dR, DailyStockRating.stockNameComparator);
+            Collections.sort(jsonArrayTimes, DailyStockRating.stockNameComparator);
+            ArrayList<DailyStockRating> finishedArrayForDB = new ArrayList<>();
+            for(int i=0; i<dR.size(); i++){
+                double closeDB = dR.get(i).getClose();
+                double closeToday = jsonArrayTimes.get(i).getClose();
+                double rate = closeToday/closeDB*100;
+                DailyStockRating forAdding = jsonArrayTimes.get(i);
+                finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
+            }
+            facade.addDailyStockRatingsToDB(finishedArrayForDB);
+            return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc));
+        }else{
+            return "failed - data already up-to-date";
+        }
     }
 }
