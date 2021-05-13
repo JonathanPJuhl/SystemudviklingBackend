@@ -3,6 +3,8 @@ package utils;
 
 import entities.Role;
 import entities.User;
+import facades.StockFacade;
+import rest.StockResource;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -71,6 +73,8 @@ public class SetupTestUsers {
     em.persist(admin);
     em.persist(both);
     em.getTransaction().commit();
+    StockResource sR = new StockResource();
+    sR.fillDb();
     System.out.println("PW: " + user.getPassword());
     System.out.println("Testing user with OK password: " + user.verifyPassword("test"));
     System.out.println("Testing user with wrong password: " + user.verifyPassword("test1"));

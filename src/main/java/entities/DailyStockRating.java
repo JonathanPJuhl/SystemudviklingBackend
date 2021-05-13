@@ -6,8 +6,8 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 @Entity
-@Table(name = "stocks")
-@NamedQuery(name = "Stock.deleteAllRows", query = "DELETE from Stock")
+@Table(name = "stocks_daily")
+@NamedQuery(name = "DailyStockRating.deleteAllRows", query = "DELETE from DailyStockRating")
 public class DailyStockRating implements Serializable {
 
 
@@ -92,4 +92,14 @@ public class DailyStockRating implements Serializable {
             //descending order
             //return StudentName2.compareTo(StudentName1);
         }};
+
+    @Override
+    public String toString() {
+        return "DailyStockRating{" +
+                "stockTicker='" + stockTicker + '\'' +
+                ", date='" + date + '\'' +
+                ", close=" + close +
+                ", rate=" + rate +
+                '}';
+    }
 }

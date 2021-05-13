@@ -1,5 +1,6 @@
 package facades;
 
+import SVG.ChartMaker;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import entities.DailyStockRating;
 import entities.Stock;
@@ -135,58 +136,13 @@ public class StockFacade {
 
     }
 
-   /* public ArrayList<String> getFiveBiggestGains(HashMap<String, Double> pin, HashMap<String, Double> pinYesterday) {
-        //sammenlign keys fra maps og indsæt kun i array, hvis key er i begge
-        ArrayList<String> fiveBiggestGains = new ArrayList();
-        fiveBiggestGains.add("a, 0");
-        fiveBiggestGains.add("b, 1");
-        fiveBiggestGains.add("c, 2");
-        fiveBiggestGains.add("d, 3");
-        fiveBiggestGains.add("e, 4");
-        ArrayList<Double> pinned = new ArrayList<Double>(pin.values());
-        ArrayList<String> pinnedSymbol = new ArrayList<String>(pin.keySet());
-        ArrayList<Double> pinnedYesterday = new ArrayList<Double>(pinYesterday.values());
-        ArrayList<String> pinnedYesterdaySymbol = new ArrayList<String>(pinYesterday.keySet());
-        HashMap<String, Double> finalMapToday = new HashMap<>();
-        for(int i = 0; i<pinnedYesterdaySymbol.size(); i++){
 
-            if(pinnedSymbol.contains(pinnedYesterdaySymbol.get(i))) {
-                finalMapToday.put(pinnedYesterdaySymbol.get(i), pin.get(pinnedYesterdaySymbol.get(i)));
-                //hvis dette (i) ligger et sted i arraylisten, så gør ingenting, hvis det ikke kan findes, så fjern dette (j) fra arraylisten
-            }
-        }
-        ArrayList<Double> pinnedTodayFinal = new ArrayList<Double>(pin.values());
-        ArrayList<String> pinnedFinalSymbol = new ArrayList<String>(pin.keySet());
-        for(int i = 0; i<pinnedTodayFinal.size(); i++){
-
-            double valueToday = pinnedTodayFinal.get(i);
-            double valueYesterday = pinnedYesterday.get(i);
-            if(valueToday>valueYesterday){
-                double percentage = valueToday/valueYesterday*100;
-                for(int j = 0; j<5; j++){
-                    String[] fivebiggestToday = fiveBiggestGains.get(j).split(",");
-                    double fiveValue = Double.parseDouble(fivebiggestToday[1]);
-                    if(percentage>fiveValue){
-                        fiveBiggestGains.remove(j);
-                        fiveBiggestGains.add(j, pinnedSymbol.get(i)+","+pinned.get(i).toString());
-                    }
-                }
-            }
-        }
-
-        return fiveBiggestGains;
-    }
-*/
-    /*public ArrayList<String> getFiveBiggestDrops(ArrayList<String> pinned, ArrayList<String> pinnedYesterday) {
-        return null;
-    }*/
     public void addDailyStockRatingsToDB(ArrayList<DailyStockRating> dailyStocks){
         EntityManager em = emf.createEntityManager();
         try{
-            DailyStockRating dR = em.find( DailyStockRating.class, "AAPL");
             em.getTransaction().begin();
             for (int i = 0; i<dailyStocks.size(); i++){
-                em.persist(dailyStocks.get(i));
+                em.merge(dailyStocks.get(i));
             }
             em.getTransaction().commit();
         }finally {
@@ -211,6 +167,13 @@ public class StockFacade {
         }finally {
             em.close();
         }
-        return sortedList;
+
+        return sortedList.subList(0,5);
+    }
+
+    public String makeChart(ArrayList<DailyStockRating> jsonArrayTimes) {
+        ChartMaker chartMaker = new ChartMaker();
+
+        return chartMaker.draw(jsonArrayTimes);
     }
 }
