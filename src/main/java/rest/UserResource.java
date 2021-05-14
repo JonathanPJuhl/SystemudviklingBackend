@@ -77,13 +77,5 @@ public class UserResource {
        s.populate();
         return "Success";
     }
- /*   @POST
-    @Path("create")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String addPerson(String json) {
-        PersonDTO persDTO = GSON.fromJson(json, PersonDTO.class);
-        PersonDTO persistedPers = FACADE.create(persDTO);
-        return GSON.toJson(persistedPers);
-    }*/
+
 }
