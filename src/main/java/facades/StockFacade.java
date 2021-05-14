@@ -167,8 +167,12 @@ public class StockFacade {
         }finally {
             em.close();
         }
+        if(sortedList.size()==0){
+            return sortedList;
+        } else {
 
-        return sortedList.subList(0,5);
+            return sortedList.subList(0, 5);
+        }
     }
 
     public String makeChart(ArrayList<DailyStockRating> jsonArrayTimes) {
