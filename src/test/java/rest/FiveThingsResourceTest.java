@@ -1,3 +1,4 @@
+/*
 package rest;
 
 import utils.EMF_Creator;
@@ -98,3 +99,4 @@ public class FiveThingsResourceTest {
                 .body("count", equalTo(2));
     }
 }
+*/
