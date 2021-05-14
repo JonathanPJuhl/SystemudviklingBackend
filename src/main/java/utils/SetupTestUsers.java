@@ -18,7 +18,7 @@ public class SetupTestUsers {
     User user = new User("user", "usertest");
     User admin = new User("admin", "admintest");
     User both = new User("user_admin", "bothtest");
-
+    StockResource sR = new StockResource();
     if(admin.getPassword().equals("test")||user.getPassword().equals("test")||both.getPassword().equals("test"))
       throw new UnsupportedOperationException("You have not changed the passwords");
 
@@ -29,8 +29,7 @@ public class SetupTestUsers {
     em.persist(userRole);
     em.persist(adminRole);
     em.persist(user);
-    em.persist(admin);
-    em.persist(both);
+    sR.fillDb();
     user.addRole(userRole);
     admin.addRole(adminRole);
     both.addRole(userRole);
@@ -62,13 +61,13 @@ public class SetupTestUsers {
 
     em.getTransaction().begin();
     Role userRole = new Role("user");
-    Role adminRole = new Role("admin");
+
     user.addRole(userRole);
-    admin.addRole(adminRole);
+
     both.addRole(userRole);
-    both.addRole(adminRole);
+
     em.persist(userRole);
-    em.persist(adminRole);
+
     em.persist(user);
     em.persist(admin);
     em.persist(both);
