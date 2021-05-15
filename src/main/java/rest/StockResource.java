@@ -33,6 +33,8 @@ import utils.SetupTestUsers;
 @Path("stock")
 public class StockResource {
 
+    private static String accessKeyMarketstack = "80f90dbc8de86858f292e8e8ff76293f";
+
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     private static StockFacade facade = StockFacade.getFacadeExample(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -81,7 +83,7 @@ public class StockResource {
     public String getPinnedByUser(@PathParam("username") String username) {
         /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
         List<String> list = facade.getPinnedStocks(username);
-        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols=";
+        String URL = "https://api.marketstack.com/v1/eod/latest?access_key="+accessKeyMarketstack+"&symbols=";
         String pinned = "";
         for (int i = 0; i < list.size(); i++) {
             if (i != list.size() - 1) {
@@ -100,7 +102,7 @@ public class StockResource {
             e.printStackTrace();
         }
 
-        return "[" + pin + "]";
+        return  pin ;
     }
 
     public String fetchData(String _url) throws MalformedURLException, IOException {
@@ -150,7 +152,7 @@ public class StockResource {
     @Path("fillDBwithTickers")
     @Consumes(MediaType.APPLICATION_JSON)
     public String fillDb() {
-        String URL = "https://api.marketstack.com/v1/tickers?access_key=5feeee1a869fedc6e6e24e62c735bc22";
+        String URL = "https://api.marketstack.com/v1/tickers?access_key="+accessKeyMarketstack;
         String data = "";
 
         try {
@@ -229,7 +231,7 @@ public class StockResource {
         if( dR.size()==0 || (hour>23 && !dR.get(0).getDate().equals(thisDay)) ) {
             String data = "";
             try {
-                data = fetchData("https://api.marketstack.com/v1/eod?access_key=5feeee1a869fedc6e6e24e62c735bc22&symbols="+symbols);
+                data = fetchData("https://api.marketstack.com/v1/eod?access_key="+accessKeyMarketstack+"&symbols="+symbols);
             } catch (IOException e) {
                 e.printStackTrace();
             }
