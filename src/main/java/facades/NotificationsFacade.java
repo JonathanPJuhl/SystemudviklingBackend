@@ -52,11 +52,15 @@ public class NotificationsFacade {
         em2.getTransaction().commit();
         em2.close();
         UserStockNoti stocksForUpdate = null;
-        Stock stock = null;
+        Stock stock =  em.find(Stock.class, ticker);
+        StockFacade sF = StockFacade.getFacadeExample(emf);
+        double currentClosingValue = sF.getCurrentClosingValue(ticker);
         for(int i = 0; i <user.getStockList().size(); i++){
             if(user.getStockList().get(i).getStockTicker().equals(ticker))
-               stock = em.find(Stock.class, ticker);
-                stocksForUpdate = (new UserStockNoti(user, stock, valueInPercent));
+            System.out.println("USER: " + user.getUsername());
+            System.out.println(" STOCK: " + stock.getStockTicker());
+            System.out.println( " VALUE " +valueInPercent);
+                stocksForUpdate = (new UserStockNoti(user, stock, valueInPercent, currentClosingValue));
             }
     UserStockNoti foundStockNoti = em.find(UserStockNoti.class, username+ticker);
     if(foundStockNoti!=null){
@@ -82,123 +86,71 @@ public class NotificationsFacade {
     }
     }
 
-    public List<String> getPinnedStocks(String username) {
+    public void checkThresholds() {
         EntityManager em = emf.createEntityManager();
-        System.out.println(username);
+
+        //Finds all users and adds them to list
+        TypedQuery<User> findUsers = em.createQuery("SELECT u from User u", User.class);
+        List<User> users = findUsers.getResultList();
+
+        //Finds all dailystockratings and adds them to list
+        TypedQuery<DailyStockRating> findDaily = em.createQuery("SELECT d from DailyStockRating d", DailyStockRating.class);
+        List<DailyStockRating> dailyratings = findDaily.getResultList();
+
+        //For each user in the list, a check is made, to find all notification wishes from userStockNoti belonging to the user
+        for(int i=0; i< users.size(); i++){
+            //Finds everythnig from stockNoti and makes list, based on username
+            TypedQuery<UserStockNoti> findUserStockNoti = em.createQuery("SELECT u from UserStockNoti u WHERE u.user = :user", UserStockNoti.class);
+            findUserStockNoti.setParameter("user", users.get(i).getUsername());
+            List<UserStockNoti> userStockNoti = findUserStockNoti.getResultList();
+
+            //Get ticker, value, close for hver
+            //sammenlign ny close med denne og tjek om det er højere end 5 eller lavere end -5 f.eks.
+
+            //Checks each notificationsetting
+            for(int j=0; j<userStockNoti.size(); j++){
+                String ticker = userStockNoti.get(j).getStock().getStockTicker();
+                double close = userStockNoti.get(j).getClose();
+                int thresh = userStockNoti.get(j).getThreshold();
+                    //compares noti-setting to daily closing values
+                    for(int h = 0 ; h<dailyratings.size(); h++){
+
+                        //Checks to find the stockticker in dailyratings
+                        if(dailyratings.get(h).getStockTicker().equals(ticker)){
+                            double rate = 0.0;
+                            //Calculates change from yesterdays close in percent
+                            if(close>0) {
+                                rate = 100-(dailyratings.get(h).getClose() / close) * 100;
+                            } else{
+                                rate = 100+(dailyratings.get(h).getClose() / close) * 100;
+                            }
+                            //Checks for positive spike
+                            if(rate>0){
+                               if(rate>thresh){
+                                   //ADD NOTI TO DB
+                               }
+                                //Checks for negative spike
+                           } else{
+                               if(rate<thresh){
+                                   //ADD NOTI TO DB
+                               }
+                           }
+                        }
+                    }
+            }
+        }
+
+
+
 
         Query stocks = em.createQuery("SELECT s.stockTicker from Stock s join s.userList u where u.username = :username");
-        stocks.setParameter("username", username);
-        //User user = em.find(User.class, username);
-       // List<Stock> stocks=user.getStockList();
-
-       /* for(int i=0; i<user2.size()-1;i++){
-            stocks.add(new Stock(user2.get(i)));
-        }*/
         List<String> stock = stocks.getResultList();
 
             em.close();
 
 
 
-        return stock;
+       // return stock;
     }
 
-    public List<StockSymbol> getAllStockTickers() {
-        EntityManager em = emf.createEntityManager();
-        List<StockSymbol> symbolList = new ArrayList<>();
-        try{
-            em.getTransaction().begin();
-            TypedQuery<StockSymbol> symbols = em.createQuery("SELECT s.symbol FROM StockSymbol s", StockSymbol.class);
-            symbolList = symbols.getResultList();
-            em.getTransaction().commit();
-            }finally {
-
-            em.close();
-        }
-       /* List<String> strings = new ArrayList<>();
-        for(int i = 0; i<symbolList.size(); i++){
-            strings.add(symbolList.get(i).getSymbol());
-        }*/
-    return symbolList;
-    }
-
-    public void addStockTickersToDB(ArrayList<String> fromJson) {
-        EntityManager em = emf.createEntityManager();
-        try{
-        em.getTransaction().begin();
-       for (int i = 0; i<fromJson.size(); i++){
-           StockSymbol symbol = new StockSymbol(fromJson.get(i));
-           em.persist(symbol);
-       }}finally {
-            em.getTransaction().commit();
-            em.close();
-        }
-
-
-    }
-
-
-    public void addDailyStockRatingsToDB(ArrayList<DailyStockRating> dailyStocks){
-        EntityManager em = emf.createEntityManager();
-        try{
-            em.getTransaction().begin();
-            for (int i = 0; i<dailyStocks.size(); i++){
-                em.merge(dailyStocks.get(i));
-            }
-            em.getTransaction().commit();
-        }finally {
-            em.close();
-        }
-    }
-    public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend){
-        EntityManager em = emf.createEntityManager();
-        List<DailyStockRating> sortedList;
-        try{
-
-                em.getTransaction().begin();
-                TypedQuery<DailyStockRating> findAllDailyStocksSorted = null;
-                if(ascendOrDescend.equals("ASC")){
-                    findAllDailyStocksSorted = em.createQuery("SELECT d from DailyStockRating d ORDER BY d.rate ASC", DailyStockRating.class);
-                }else if(ascendOrDescend.equals("DESC")){
-                    findAllDailyStocksSorted = em.createQuery("SELECT d from DailyStockRating d ORDER BY d.rate DESC", DailyStockRating.class);
-                }
-                sortedList = findAllDailyStocksSorted.getResultList();
-                em.getTransaction().commit();
-
-        }finally {
-            em.close();
-        }
-        if(sortedList.size()==0){
-            return sortedList;
-        } else {
-
-            return sortedList.subList(0, 5);
-        }
-    }
-
-    public String makeChart(ArrayList<DailyStockRating> jsonArrayTimes) {
-        ChartMaker chartMaker = new ChartMaker();
-
-        return chartMaker.draw(jsonArrayTimes);
-    }
-
-    public String deleteTickerFromUser(String username, String ticker) {
-        EntityManager em = emf.createEntityManager();
-        User user = em.find(User.class, username);
-        List<Stock> listOfStocks = user.getStockList();
-        List<Stock> newListOfStocks = new ArrayList<>();
-
-        for(int i = 0 ; i<listOfStocks.size(); i++){
-            if(!(listOfStocks.get(i).getStockTicker().equals(ticker))){
-                newListOfStocks.add(new Stock(listOfStocks.get(i).getStockTicker()));
-            }
-        }
-
-        user.setStockList(newListOfStocks);
-        em.getTransaction().begin();
-        em.merge(user);
-        em.getTransaction().commit();
-        em.close();
-        return "Success deleting: " + ticker +" from user: " + username;
-    }
 }

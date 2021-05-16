@@ -42,7 +42,7 @@ public class NotificationsEndpoint {
         String username = all[0];
         String stock = all[1];
         int price = Integer.parseInt(all[2]);
-        System.out.println("USER: " + username + " STOCK: " + stock + "PRICE: " + price);
+
         FACADE.AddNotiThreshToDb(username, stock, price);
 
         return "WUHU";

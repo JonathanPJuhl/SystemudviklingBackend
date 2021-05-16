@@ -178,8 +178,8 @@ public class StockResource {
     }
     @POST
     @Path("makechart")
-
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON})
     public String makeChart(String jsonFromFront) {
 
         JSONObject json = new JSONObject(jsonFromFront);  //initial JSONObject (See explanation section below)
@@ -203,12 +203,12 @@ public class StockResource {
         }
         System.out.println("SIZE: " + jsonArrayTimes.size());
         facade.makeChart(jsonArrayTimes);
-        return "success";
+
+        return  GSON.toJson(facade.makeChart(jsonArrayTimes));
     }
     //SHOULD BE FUNCTIONAL
     @GET
     @Path("filldbwithdailyratings/{ascordesc}")
-
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) {
@@ -231,7 +231,7 @@ public class StockResource {
         String thisDay = LocalDate.now().format(formatter);
 
         //Checks if there's been fetched to day already , if there has, it won't do it again
-        if( dR.size()==0 || (hour>23 && !dR.get(0).getDate().equals(thisDay)) ) {
+        if( dR.size()==0 || (hour>=23 && !dR.get(0).getDate().equals(thisDay)) ) {
             String data = "";
             try {
                 data = fetchData("https://api.marketstack.com/v1/eod?access_key="+accessKeyMarketstack+"&symbols="+symbols);
@@ -265,7 +265,7 @@ public class StockResource {
                 for(int i=0; i<jsonArrayTimes.size(); i++){
                     double closeDB = jsonArrayTimes.get(i).getClose();
                     double closeToday = jsonArrayTimes.get(i).getClose();
-                    double rate = closeToday/closeDB*100.00;
+                    double rate = 100-((closeToday/closeDB)*100.00);
                     DailyStockRating forAdding = jsonArrayTimes.get(i);
                     finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
                 }
@@ -274,7 +274,7 @@ public class StockResource {
 
                 double closeDB = dR.get(i).getClose();
                 double closeToday = jsonArrayTimes.get(i).getClose();
-                double rate = closeToday/closeDB*100.00;
+                double rate =  100-((closeToday/closeDB)*100.00);
                 DailyStockRating forAdding = jsonArrayTimes.get(i);
                 finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
             }}

@@ -28,11 +28,15 @@ public class UserStockNoti implements Serializable {
     @Column(name = "threshold_for_noti")
     private int threshold;
 
-    public UserStockNoti(User user, Stock stock, int threshold) {
+    @Column(name = "closing_at_time_of_setting_noti")
+    private double close;
+
+    public UserStockNoti(User user, Stock stock, int threshold, double close) {
         this.userStockID = user.getUsername()+stock.getStockTicker();
         this.user = user;
         this.stock = stock;
         this.threshold = threshold;
+        this.close = close;
     }
 
     public UserStockNoti() {
@@ -60,5 +64,13 @@ public class UserStockNoti implements Serializable {
 
     public void setThreshold(int threshold) {
         this.threshold = threshold;
+    }
+
+    public double getClose() {
+        return close;
+    }
+
+    public void setClose(double close) {
+        this.close = close;
     }
 }

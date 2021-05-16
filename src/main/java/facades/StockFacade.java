@@ -200,4 +200,11 @@ public class StockFacade {
         em.close();
         return "Success deleting: " + ticker +" from user: " + username;
     }
+
+    public double getCurrentClosingValue(String ticker) {
+        EntityManager em = emf.createEntityManager();
+        DailyStockRating dSR = em.find(DailyStockRating.class, ticker);
+        double close = dSR.getClose();
+        return close;
+    }
 }

@@ -18,21 +18,21 @@ public class ChartMaker implements Draw {
                 "<line x1=\"90\" x2=\"705\" y1=\"370\" y2=\"370\"></line>\n" +
                 "</g>\n";
 
-        System.out.println("VLAUES FROM PARAM: " + datesAndClosingValues.size());
         ArrayList<String> dates = new ArrayList<>();
         ArrayList<Double> prices = new ArrayList<>();
-        for(int i = 0; i==5; i++){
-            System.out.println("DATES: " + datesAndClosingValues.get(i).getDate());
-            System.out.println("VALUES: " + datesAndClosingValues.get(i).getClose());
+        int i = 0;
+        while (i<5){
 
-            dates.add(datesAndClosingValues.get(i).getDate());
+
+            dates.add(datesAndClosingValues.get(i).getDate().substring(0,10));
             prices.add(datesAndClosingValues.get(i).getClose());
+            i+=1;
         }
-        System.out.println("DATES: " + dates.size() + "PRICES: " + prices.size());
+
         chart+=makeXAxis(dates);
         chart+=makeYAxis(prices);
         chart+=makeDataSet(prices);
-
+        System.out.println(chart);
         return chart;
     }
     public String makeXAxis(ArrayList<String> dates){
@@ -47,12 +47,12 @@ public class ChartMaker implements Draw {
     }
     public String makeYAxis(ArrayList<Double> closePrices){
         int y = 100;
-        int shownValue = 200;
+        int shownValue = 600;
         String moneyLine = "<g class=\"labels y-labels\">\n";
         for(int i = 0; i<closePrices.size(); i++){
             moneyLine+="<text x=\"80\" y=\""+y+"\">"+shownValue+"</text>";
             y+=116;
-            shownValue+=200;
+            shownValue-=200;
         }
         moneyLine+="<text x=\"50\" y=\"200\" class=\"label-title\">Price</text>\n</g>\n";
         return moneyLine;
