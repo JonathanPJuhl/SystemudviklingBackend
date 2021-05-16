@@ -14,6 +14,7 @@ import org.mindrot.jbcrypt.BCrypt;
 @NamedQuery(name = "Stock.deleteAllRows", query = "DELETE from Stock")
 public class Stock implements Serializable {
 
+    //MAKE JOINED TABLE WITH THRESH
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -23,8 +24,12 @@ public class Stock implements Serializable {
     private String stockTicker;
 
 
+
+
     @ManyToMany(mappedBy = "stockList")
     private List<User> userList;
+
+
 
     public Stock() {
     }
@@ -33,6 +38,7 @@ public class Stock implements Serializable {
     public Stock(String stockTicker) {
         this.stockTicker = stockTicker;
         this.userList = new ArrayList<>();
+
     }
 
     public String getStockTicker() {
@@ -54,7 +60,7 @@ public class Stock implements Serializable {
     @Override
     public String toString() {
         return "Stock{" +
-                "stockTicker=\'" + stockTicker + '\'' +
+                "stockTicker=\'" + stockTicker + '\'' +"value=\'"  + '\'' +
                 '}';
     }
 //TODO Change when password is hashed

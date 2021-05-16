@@ -74,7 +74,7 @@ public class UserFacade {
     }
     public User findUserByUsername(String username){
         EntityManager em = emf.createEntityManager();
-
+        System.out.println("USERNAME : " +username);
         User userFound;
         try {
         em.getTransaction().begin();

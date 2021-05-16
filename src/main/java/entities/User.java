@@ -44,12 +44,16 @@ public class User implements Serializable {
   @ManyToMany
   private List<Role> roleList = new ArrayList<>();
 
+  //JOIN 3 tables HERE (NOTI, STOCK, USER)
 
   @JoinTable(name = "user_stock_choices", joinColumns = {
           @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
-          @JoinColumn(name = "stock_ticker", referencedColumnName = "stock_ticker")})
+          @JoinColumn(name = "stock_ticker", referencedColumnName = "stock_ticker")
+  })
   @ManyToMany
   private List<Stock> stockList = new ArrayList<Stock>();
+
+
 
   public List<String> getRolesAsStrings() {
     if (roleList.isEmpty()) {

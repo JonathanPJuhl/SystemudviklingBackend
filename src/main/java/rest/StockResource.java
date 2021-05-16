@@ -77,6 +77,7 @@ public class StockResource {
 
     @GET
     @Path("pinned/{username}")
+
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     //@RolesAllowed("user")
@@ -177,6 +178,7 @@ public class StockResource {
     }
     @POST
     @Path("makechart")
+
     @Consumes(MediaType.APPLICATION_JSON)
     public String makeChart(String jsonFromFront) {
 
@@ -206,6 +208,7 @@ public class StockResource {
     //SHOULD BE FUNCTIONAL
     @GET
     @Path("filldbwithdailyratings/{ascordesc}")
+
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) {
@@ -282,4 +285,17 @@ public class StockResource {
             return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc));
         }
     }
+    @GET
+    @Path("/deletePin/{userTicker}")
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String deletePinnedStockFromUser(@PathParam("userTicker") String userAndTicker){
+        String[] usernameAndTicker = userAndTicker.split(",");
+        String username = usernameAndTicker[0];
+        String ticker = usernameAndTicker[1];
+        String status = facade.deleteTickerFromUser(username, ticker);
+        return "{ \"resp\": \""+status+"\"}";
+
+    }
+
 }

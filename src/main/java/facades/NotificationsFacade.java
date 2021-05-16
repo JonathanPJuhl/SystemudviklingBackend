@@ -1,33 +1,27 @@
 package facades;
 
 import SVG.ChartMaker;
-import com.nimbusds.jose.shaded.json.JSONObject;
-import entities.DailyStockRating;
-import entities.Stock;
-import entities.StockSymbol;
-import entities.User;
-
+import entities.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  *
  * Rename Class to a relevant name Add add relevant facade methods
  */
-public class StockFacade {
+public class NotificationsFacade {
 
-    private static StockFacade instance;
+    private static NotificationsFacade instance;
     private static EntityManagerFactory emf;
     private UserFacade facade = UserFacade.getUserFacade(emf);
-    
+
     //Private Constructor to ensure Singleton
-    private StockFacade() {}
+    private NotificationsFacade() {}
     
     
     /**
@@ -35,10 +29,10 @@ public class StockFacade {
      * @param _emf
      * @return an instance of this facade class.
      */
-    public static StockFacade getFacadeExample(EntityManagerFactory _emf) {
+    public static NotificationsFacade getFacadeExample(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
-            instance = new StockFacade();
+            instance = new NotificationsFacade();
         }
         return instance;
     }
@@ -49,7 +43,7 @@ public class StockFacade {
     
 
 
-    public void AddToDb(String ticker, String username) {
+    public void AddNotiThreshToDb(String username, String ticker, int valueInPercent) {
         EntityManager em = emf.createEntityManager();
         EntityManager em2 = emf.createEntityManager();
         UserFacade userFacade = UserFacade.getUserFacade(emf);
@@ -57,28 +51,35 @@ public class StockFacade {
         User user =  userFacade.findUserByUsername(username);
         em2.getTransaction().commit();
         em2.close();
-        Stock stock = new Stock(ticker);
-        System.out.println(stock.toString());
-        System.out.println(user.toString());
-        user.addStock(stock);
+        UserStockNoti stocksForUpdate = null;
+        Stock stock = null;
+        for(int i = 0; i <user.getStockList().size(); i++){
+            if(user.getStockList().get(i).getStockTicker().equals(ticker))
+               stock = em.find(Stock.class, ticker);
+                stocksForUpdate = (new UserStockNoti(user, stock, valueInPercent));
+            }
+    UserStockNoti foundStockNoti = em.find(UserStockNoti.class, username+ticker);
+    if(foundStockNoti!=null){
+        foundStockNoti = stocksForUpdate;
         try{
             em.getTransaction().begin();
-            Stock foundStock = em.find(Stock.class, ticker);
-            if(foundStock!=null){
-            user.addStock(foundStock);
-            em.merge(user);
+            em.merge(foundStockNoti);
             em.getTransaction().commit();
-            }
 
-            else{
-                em.persist(stock);
-
-                em.merge(user);
-            em.getTransaction().commit();
-        }
-        }finally{
+        } finally {
             em.close();
         }
+    } else {
+
+        try {
+            em.getTransaction().begin();
+            em.persist(stocksForUpdate);
+            em.getTransaction().commit();
+
+        } finally {
+            em.close();
+        }
+    }
     }
 
     public List<String> getPinnedStocks(String username) {
