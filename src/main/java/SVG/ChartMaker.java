@@ -36,37 +36,41 @@ public class ChartMaker implements Draw {
         return chart;
     }
     public String makeXAxis(ArrayList<String> dates){
-        int x = 100;
+        int x = 684;
         String dateLine = "<g class=\"labels x-labels\">";
         for(int i = 0; i<dates.size(); i++){
             dateLine+="<text x=\""+x+"\" y=\"400\">"+dates.get(i)+"</text>";
-            x+=146;
+            x-=146;
         }
         dateLine+="<text x=\"400\" y=\"440\" class=\"label-title\">Date</text>\n</g>\n";
         return dateLine;
     }
     public String makeYAxis(ArrayList<Double> closePrices){
-        int y = 100;
-        int shownValue = 600;
+        double y = 10;
+        int shownValue = 1000;
         String moneyLine = "<g class=\"labels y-labels\">\n";
-        for(int i = 0; i<closePrices.size(); i++){
+        for(int i = 0; i<11; i++){
             moneyLine+="<text x=\"80\" y=\""+y+"\">"+shownValue+"</text>";
-            y+=116;
-            shownValue-=200;
+            y+=37.1;
+            if(!(shownValue == 0)) {
+                shownValue -= 100;
+            }
         }
         moneyLine+="<text x=\"50\" y=\"200\" class=\"label-title\">Price</text>\n</g>\n";
         return moneyLine;
     }
 
 public String makeDataSet(ArrayList<Double> closePrices){
-        int y = 100;
-        int shownValue = 200;
+
+        //Value for each step up (1000/371)
+    double starting = 371;
+        double cy = 0.371;
         String dataLine = "<g class=\"data\" data-setname=\"Our first data set\">\n"+
-                "<circle cx=\"90\" cy=\"192\" data-value=\""+closePrices.get(0)+"\" r=\"4\"></circle>\n" +
-                "<circle cx=\"240\" cy=\"141\" data-value=\""+closePrices.get(1)+"\" r=\"4\"></circle>\n" +
-                "<circle cx=\"388\" cy=\"179\" data-value=\""+closePrices.get(2)+"\" r=\"4\"></circle>\n" +
-                "<circle cx=\"531\" cy=\"200\" data-value=\""+closePrices.get(3)+"\" r=\"4\"></circle>\n" +
-                "<circle cx=\"677\" cy=\"104\" data-value=\""+closePrices.get(4)+"\" r=\"4\"></circle>\n" +
+                "<circle cx=\"90\" cy=\""+(starting-closePrices.get(0)*cy)+"\" data-value=\""+closePrices.get(0)+"\" r=\"4\"></circle>\n" +
+                "<circle cx=\"240\" cy=\""+(starting-closePrices.get(1)*cy)+"\" data-value=\""+closePrices.get(1)+"\" r=\"4\"></circle>\n" +
+                "<circle cx=\"388\" cy=\""+(starting-closePrices.get(2)*cy)+"\" data-value=\""+closePrices.get(2)+"\" r=\"4\"></circle>\n" +
+                "<circle cx=\"531\" cy=\""+(starting-closePrices.get(3)*cy)+"\" data-value=\""+closePrices.get(3)+"\" r=\"4\"></circle>\n" +
+                "<circle cx=\"677\" cy=\""+(starting-closePrices.get(4)*cy)+"\" data-value=\""+closePrices.get(4)+"\" r=\"4\"></circle>\n" +
                 "</g>\n" +
                 "</svg>";
         return dataLine;
