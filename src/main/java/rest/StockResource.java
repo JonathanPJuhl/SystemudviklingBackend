@@ -222,7 +222,7 @@ public class StockResource {
             }
 
         }
-        List<DailyStockRating> dR = facade.findFiveHighestGainsOrDropsFromDB("ASC");
+        List<DailyStockRating> dR = facade.findFiveHighestGainsOrDropsFromDB("ASC", "first");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Calendar rightNow = Calendar.getInstance();
         int hour = rightNow.get(Calendar.HOUR_OF_DAY);
@@ -234,7 +234,7 @@ public class StockResource {
         if( dR.size()==0 || (hour>=23 && !dR.get(0).getDate().equals(thisDay)) ) {
             String data = "";
             try {
-                data = fetchData("https://api.marketstack.com/v1/eod?access_key="+accessKeyMarketstack+"&symbols="+symbols);
+                data = fetchData("https://api.marketstack.com/v1/eod/latest?access_key="+accessKeyMarketstack+"&symbols="+symbols);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -259,30 +259,49 @@ public class StockResource {
             //sorting the two arrays to get them in same order, before claculating the daily rate
             Collections.sort(dR, DailyStockRating.stockNameComparator);
             Collections.sort(jsonArrayTimes, DailyStockRating.stockNameComparator);
+            ArrayList<DailyStockRating> jsonArrayTimesFittedForCompare = new ArrayList<>();
             ArrayList<DailyStockRating> finishedArrayForDB = new ArrayList<>();
+
+
+            for(int i = 0; i< dR.size(); i++){
+                for(int j = 0; j<dR.size(); j++){
+                    if(jsonArrayTimes.get(i).getStockTicker().equals(dR.get(j).getStockTicker())){
+                        jsonArrayTimesFittedForCompare.add(jsonArrayTimes.get(i));
+                    }
+                }
+
+
+            }
+            System.out.println("DR SIZE " + dR.size());
+            System.out.println("JSON ARRAY SIZE " + jsonArrayTimesFittedForCompare.size());
+            for(int i = 0; i< jsonArrayTimesFittedForCompare.size(); i++){
+                System.out.println("JSON ARRAY: " + jsonArrayTimesFittedForCompare.get(i).getStockTicker());
+                System.out.println("dR: " + dR.get(i).getStockTicker());
+               }
+
             if(dR.size()==0){
 
-                for(int i=0; i<jsonArrayTimes.size(); i++){
-                    double closeDB = jsonArrayTimes.get(i).getClose();
-                    double closeToday = jsonArrayTimes.get(i).getClose();
+                for(int i=0; i<jsonArrayTimesFittedForCompare.size(); i++){
+                    double closeDB = jsonArrayTimesFittedForCompare.get(i).getClose();
+                    double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
                     double rate = 100-((closeToday/closeDB)*100.00);
-                    DailyStockRating forAdding = jsonArrayTimes.get(i);
+                    DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
                     finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
                 }
             }else{
             for(int i=0; i<dR.size(); i++){
 
                 double closeDB = dR.get(i).getClose();
-                double closeToday = jsonArrayTimes.get(i).getClose();
+                double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
                 double rate =  100-((closeToday/closeDB)*100.00);
-                DailyStockRating forAdding = jsonArrayTimes.get(i);
+                DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
                 finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
             }}
 
             facade.addDailyStockRatingsToDB(finishedArrayForDB);
-            return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc));
+            return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last"));
         }else{
-            return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc));
+            return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last"));
         }
     }
     @GET

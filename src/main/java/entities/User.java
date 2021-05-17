@@ -53,6 +53,13 @@ public class User implements Serializable {
   @ManyToMany
   private List<Stock> stockList = new ArrayList<Stock>();
 
+  @JoinTable(name = "user_notifications", joinColumns = {
+          @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
+          @JoinColumn(name = "message_id", referencedColumnName = "message_id")
+  })
+  @ManyToMany
+  private List<Notifications> notiList = new ArrayList<Notifications>();
+
 
 
   public List<String> getRolesAsStrings() {
@@ -116,6 +123,18 @@ public class User implements Serializable {
 
   public void addStock(Stock userStock) {
     stockList.add(userStock);
+  }
+
+  public void addNoti(Notifications noti){
+    notiList.add(noti);
+  }
+
+  public List<Notifications> getNotiList() {
+    return notiList;
+  }
+
+  public void setNotiList(List<Notifications> notiList) {
+    this.notiList = notiList;
   }
 
   public String getRecoveryquestion() {

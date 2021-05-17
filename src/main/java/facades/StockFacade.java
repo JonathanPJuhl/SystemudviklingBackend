@@ -149,7 +149,7 @@ public class StockFacade {
             em.close();
         }
     }
-    public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend){
+    public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend, String firstOrSecond){
         EntityManager em = emf.createEntityManager();
         List<DailyStockRating> sortedList;
         try{
@@ -170,8 +170,12 @@ public class StockFacade {
         if(sortedList.size()==0){
             return sortedList;
         } else {
+            if(firstOrSecond.equals("first")){
+                return sortedList;
+            }else{
 
             return sortedList.subList(0, 5);
+            }
         }
     }
 
