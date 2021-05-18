@@ -156,9 +156,9 @@ public class NotificationsFacade {
         EntityManager em = emf.createEntityManager();
         String messageInput = "";
         if (rate > 0) {
-            messageInput = " has gained over: ";
+            messageInput = " has gained: ";
         } else {
-            messageInput = " has dropped below: ";
+            messageInput = " has dropped: ";
         }
         String message = ticker + messageInput + rate + "% today";
         boolean status = true; // This is the same as "new"
@@ -171,13 +171,14 @@ public class NotificationsFacade {
         foundNoti.setParameter("message", message);
         List<Notifications> checkWithList = foundNoti.getResultList();
 
-        if (checkWithList.size() != 0) {
+        System.out.println(" SIZE : " + checkWithList.size());
+        if (checkWithList.size() == 0) {
             user.addNoti(noti);
             em.getTransaction().begin();
             em.persist(noti);
             em.merge(user);
             em.getTransaction().commit();
-        } else if (checkWithList.size() == 0) {
+        } else if (checkWithList.size() != 0) {
             System.out.println("Noti already exists");
         }
         em.close();

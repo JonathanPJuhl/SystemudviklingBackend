@@ -3,6 +3,7 @@ package rest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import entities.User;
+import entities.UserDTO;
 import facades.UserFacade;
 import utils.EMF_Creator;
 import utils.SetupTestUsers;
@@ -61,6 +62,18 @@ public class UserResource {
         String thisuser = securityContext.getUserPrincipal().getName();
         return "{\"msg\": \"Welcome " + thisuser + "\"}";
     }
+
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("account/{username}")
+   // @RolesAllowed({"user"})
+    public String getAccountInfo(@PathParam("username") String username) {
+        User user = facade.findUserByUsername(username);
+        UserDTO userDTO = new UserDTO(user.getUsername(), user.getRecoveryquestion());
+        return GSON.toJson(userDTO);
+    }
+
 
 
     @GET
