@@ -51,13 +51,7 @@ public class UserFacade {
 
         EntityManager em = emf.createEntityManager();
 
-
-
-        System.out.println(user.toString());
         User userforPersist = new User(user.getUsername(), user.getPassword(), user.getRecoveryquestion(), user.getAnswer());
-
-
-
 
         em.getTransaction().begin();
 
@@ -65,28 +59,24 @@ public class UserFacade {
 
         userforPersist.addRole(userRole);
 
-
         em.persist(userforPersist);
-
 
         em.getTransaction().commit();
         return userforPersist;
     }
+
     public User findUserByUsername(String username){
         EntityManager em = emf.createEntityManager();
-        System.out.println("USERNAME : " +username);
         User userFound;
         try {
         em.getTransaction().begin();
         TypedQuery<User> user = em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class);
         user.setParameter("username", username);
         em.getTransaction().commit();
-
         userFound = user.getSingleResult();}
         finally{
         em.close();
         }
-
         return userFound;
     }
 

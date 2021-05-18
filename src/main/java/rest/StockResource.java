@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import entities.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -40,7 +41,6 @@ public class StockResource {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     @Context
     private UriInfo context;
-
     @Context
     SecurityContext securityContext;
 
@@ -50,7 +50,7 @@ public class StockResource {
         return "{\"msg\":\"Hello anonymous\"}";
     }
 
-    //Just to verify if the database is setup
+    /*//Just to verify if the database is setup
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("all")
@@ -64,7 +64,7 @@ public class StockResource {
         } finally {
             em.close();
         }
-    }
+    }*/
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -77,25 +77,23 @@ public class StockResource {
 
     @GET
     @Path("pinned/{username}")
-
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     //@RolesAllowed("user")
     public String getPinnedByUser(@PathParam("username") String username) {
-        /*List<Stock> stockTicker = facade.getPinnedStocks(username);*/
         List<String> list = facade.getPinnedStocks(username);
-        String URL = "https://api.marketstack.com/v1/eod/latest?access_key="+accessKeyMarketstack+"&symbols=";
-        String pinned = "";
+        String URL = "https://api.marketstack.com/v1/eod/latest?access_key=" + accessKeyMarketstack + "&symbols=";
+
+
         for (int i = 0; i < list.size(); i++) {
             if (i != list.size() - 1) {
                 URL += list.get(i) + ",";
             } else {
-                URL += list.get(i) ;
+                URL += list.get(i);
             }
 
         }
-        // return stocks
-        String pin ="";
+        String pin = "";
         try {
             pin = fetchData(URL);
 
@@ -103,18 +101,16 @@ public class StockResource {
             e.printStackTrace();
         }
 
-        return  pin ;
+        return pin;
     }
 
-    public String fetchData(String _url) throws MalformedURLException, IOException {
+    public String fetchData(String _url) throws IOException {
         URL url = new URL(_url);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-
         con.setRequestProperty("Accept", "application/json");
         con.setRequestProperty("Content-Type", "application/json");
         con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
-
         Scanner scan = new Scanner(con.getInputStream());
         String jsonStr = "";
         while (scan.hasNext()) {
@@ -128,10 +124,9 @@ public class StockResource {
     @Path("populate")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String populate() {
+    public void populate() {
         SetupTestUsers s = new SetupTestUsers();
         s.populate();
-        return "Success";
     }
 
     @POST
@@ -152,8 +147,8 @@ public class StockResource {
     @GET
     @Path("fillDBwithTickers")
     @Consumes(MediaType.APPLICATION_JSON)
-    public String fillDb() {
-        String URL = "https://api.marketstack.com/v1/tickers?access_key="+accessKeyMarketstack;
+    public void fillDb() {
+        String URL = "https://api.marketstack.com/v1/tickers?access_key=" + accessKeyMarketstack;
         String data = "";
 
         try {
@@ -163,19 +158,19 @@ public class StockResource {
         }
         JSONObject json = new JSONObject(data);  //initial JSONObject (See explanation section below)
         JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
-         //first JSONObject inside "results" JSONArray
         ArrayList<String> jsonArrayTimes = new ArrayList<>();  //"times" JSONArray
 
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject item = jsonArray.getJSONObject(i);
-            String symb = (String)item.get("symbol");
+            String symb = (String) item.get("symbol");
             System.out.println(symb);
-            if(!symb.contains(".")){
-            jsonArrayTimes.add(symb);}
+            if (!symb.contains(".")) {
+                jsonArrayTimes.add(symb);
+            }
         }
         facade.addStockTickersToDB(jsonArrayTimes);
-        return "success";
     }
+
     @POST
     @Path("makechart")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -186,7 +181,6 @@ public class StockResource {
         JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
         //first JSONObject inside "results" JSONArray
         ArrayList<DailyStockRating> jsonArrayTimes = new ArrayList<>();  //"times" JSONArray
-
 
 
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -204,8 +198,9 @@ public class StockResource {
         System.out.println("SIZE: " + jsonArrayTimes.size());
         facade.makeChart(jsonArrayTimes);
 
-        return  GSON.toJson(facade.makeChart(jsonArrayTimes));
+        return GSON.toJson(facade.makeChart(jsonArrayTimes));
     }
+
     //SHOULD BE FUNCTIONAL
     @GET
     @Path("filldbwithdailyratings/{ascordesc}")
@@ -218,7 +213,7 @@ public class StockResource {
             if (i != tickers.size() - 1) {
                 symbols += tickers.get(i) + ",";
             } else {
-                symbols += tickers.get(i) ;
+                symbols += tickers.get(i);
             }
 
         }
@@ -226,23 +221,22 @@ public class StockResource {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Calendar rightNow = Calendar.getInstance();
         int hour = rightNow.get(Calendar.HOUR_OF_DAY);
-        //Using our because stockdata is not released until 5 in the afternoon in the us (therefore 23 in  DK)
-        System.out.println("HOUR: " + hour);
+        //Using hour because stockdata is not released until 5 in the afternoon in the us (therefore 23 in  DK)
         String thisDay = LocalDate.now().format(formatter);
 
         //Checks if there's been fetched to day already , if there has, it won't do it again
-        if( dR.size()==0 || (hour>=23 && !dR.get(0).getDate().equals(thisDay)) ) {
+        if (dR.size() == 0 || (hour >= 23 && !dR.get(0).getDate().equals(thisDay))) {
             String data = "";
             try {
-                data = fetchData("https://api.marketstack.com/v1/eod/latest?access_key="+accessKeyMarketstack+"&symbols="+symbols);
+                data = fetchData("https://api.marketstack.com/v1/eod/latest?access_key=" + accessKeyMarketstack + "&symbols=" + symbols);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            JSONObject json = new JSONObject(data);  //initial JSONObject (See explanation section below)
-            JSONArray jsonArray = json.getJSONArray("data");  //"results" JSONArray
-            //first JSONObject inside "results" JSONArray
-            ArrayList<DailyStockRating> jsonArrayTimes = new ArrayList<>();  //"times" JSONArray
+            JSONObject json = new JSONObject(data);
+            JSONArray jsonArray = json.getJSONArray("data");
+
+            ArrayList<DailyStockRating> jsonArrayTimes = new ArrayList<>();
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject item = jsonArray.getJSONObject(i);
@@ -263,57 +257,48 @@ public class StockResource {
             ArrayList<DailyStockRating> finishedArrayForDB = new ArrayList<>();
 
 
-            for(int i = 0; i< dR.size(); i++){
-                for(int j = 0; j<dR.size(); j++){
-                    if(jsonArrayTimes.get(i).getStockTicker().equals(dR.get(j).getStockTicker())){
+            for (int i = 0; i < dR.size(); i++) {
+                for (int j = 0; j < dR.size(); j++) {
+                    if (jsonArrayTimes.get(i).getStockTicker().equals(dR.get(j).getStockTicker())) {
                         jsonArrayTimesFittedForCompare.add(jsonArrayTimes.get(i));
                     }
                 }
-
-
             }
-            System.out.println("DR SIZE " + dR.size());
-            System.out.println("JSON ARRAY SIZE " + jsonArrayTimesFittedForCompare.size());
-            for(int i = 0; i< jsonArrayTimesFittedForCompare.size(); i++){
-                System.out.println("JSON ARRAY: " + jsonArrayTimesFittedForCompare.get(i).getStockTicker());
-                System.out.println("dR: " + dR.get(i).getStockTicker());
-               }
 
-            if(dR.size()==0){
-
-                for(int i=0; i<jsonArrayTimesFittedForCompare.size(); i++){
+            if (dR.size() == 0) {
+                for (int i = 0; i < jsonArrayTimesFittedForCompare.size(); i++) {
                     double closeDB = jsonArrayTimesFittedForCompare.get(i).getClose();
                     double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
-                    double rate = 100-((closeToday/closeDB)*100.00);
+                    double rate = 100 - ((closeToday / closeDB) * 100.00);
                     DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
                     finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
                 }
-            }else{
-            for(int i=0; i<dR.size(); i++){
+            } else {
+                for (int i = 0; i < dR.size(); i++) {
 
-                double closeDB = dR.get(i).getClose();
-                double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
-                double rate =  100-((closeToday/closeDB)*100.00);
-                DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
-                finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
-            }}
-
+                    double closeDB = dR.get(i).getClose();
+                    double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
+                    double rate = 100 - ((closeToday / closeDB) * 100.00);
+                    DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
+                    finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
+                }
+            }
             facade.addDailyStockRatingsToDB(finishedArrayForDB);
             return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last"));
-        }else{
+        } else {
             return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last"));
         }
     }
+
     @GET
     @Path("/deletePin/{userTicker}")
-
     @Consumes(MediaType.APPLICATION_JSON)
-    public String deletePinnedStockFromUser(@PathParam("userTicker") String userAndTicker){
+    public String deletePinnedStockFromUser(@PathParam("userTicker") String userAndTicker) {
         String[] usernameAndTicker = userAndTicker.split(",");
         String username = usernameAndTicker[0];
         String ticker = usernameAndTicker[1];
         String status = facade.deleteTickerFromUser(username, ticker);
-        return "{ \"resp\": \""+status+"\"}";
+        return "{ \"resp\": \"" + status + "\"}";
 
     }
 

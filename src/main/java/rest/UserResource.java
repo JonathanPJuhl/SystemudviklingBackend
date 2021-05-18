@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Path("user")
 public class UserResource {
-    
+
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
     private static UserFacade facade = UserFacade.getUserFacade(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -48,24 +48,19 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("create")
     public String createUser(String user) {
-        System.out.println(user);
         User userForCreation = GSON.fromJson(user, User.class);
-
-
-       User userForReturn = facade.createUser(userForCreation);
-
+        User userForReturn = facade.createUser(userForCreation);
         return GSON.toJson(userForReturn);
     }
 
-        @GET
-        @Produces(MediaType.APPLICATION_JSON)
-        @Path("user")
-        @RolesAllowed({"user"})
-        public String getFromUser() {
-            String thisuser = securityContext.getUserPrincipal().getName();
-
-            return "{\"msg\": \"Welcome " + thisuser + "\"}";
-        }
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("user")
+    @RolesAllowed({"user"})
+    public String getFromUser() {
+        String thisuser = securityContext.getUserPrincipal().getName();
+        return "{\"msg\": \"Welcome " + thisuser + "\"}";
+    }
 
 
     @GET
@@ -73,8 +68,8 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public String populate() {
-       SetupTestUsers s = new SetupTestUsers();
-       s.populate();
+        SetupTestUsers s = new SetupTestUsers();
+        s.populate();
         return "Success";
     }
 

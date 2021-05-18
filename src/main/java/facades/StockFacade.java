@@ -50,6 +50,7 @@ public class StockFacade {
 
 
     public void AddToDb(String ticker, String username) {
+
         EntityManager em = emf.createEntityManager();
         EntityManager em2 = emf.createEntityManager();
         UserFacade userFacade = UserFacade.getUserFacade(emf);
@@ -87,24 +88,15 @@ public class StockFacade {
 
         Query stocks = em.createQuery("SELECT s.stockTicker from Stock s join s.userList u where u.username = :username");
         stocks.setParameter("username", username);
-        //User user = em.find(User.class, username);
-       // List<Stock> stocks=user.getStockList();
-
-       /* for(int i=0; i<user2.size()-1;i++){
-            stocks.add(new Stock(user2.get(i)));
-        }*/
         List<String> stock = stocks.getResultList();
-
-            em.close();
-
-
+        em.close();
 
         return stock;
     }
 
     public List<StockSymbol> getAllStockTickers() {
         EntityManager em = emf.createEntityManager();
-        List<StockSymbol> symbolList = new ArrayList<>();
+        List<StockSymbol> symbolList;
         try{
             em.getTransaction().begin();
             TypedQuery<StockSymbol> symbols = em.createQuery("SELECT s.symbol FROM StockSymbol s", StockSymbol.class);
@@ -114,10 +106,7 @@ public class StockFacade {
 
             em.close();
         }
-       /* List<String> strings = new ArrayList<>();
-        for(int i = 0; i<symbolList.size(); i++){
-            strings.add(symbolList.get(i).getSymbol());
-        }*/
+
     return symbolList;
     }
 
@@ -149,11 +138,12 @@ public class StockFacade {
             em.close();
         }
     }
+
     public List<DailyStockRating> findFiveHighestGainsOrDropsFromDB(String ascendOrDescend, String firstOrSecond){
         EntityManager em = emf.createEntityManager();
         List<DailyStockRating> sortedList;
-        try{
 
+        try{
                 em.getTransaction().begin();
                 TypedQuery<DailyStockRating> findAllDailyStocksSorted = null;
                 if(ascendOrDescend.equals("ASC")){
@@ -163,8 +153,8 @@ public class StockFacade {
                 }
                 sortedList = findAllDailyStocksSorted.getResultList();
                 em.getTransaction().commit();
-
-        }finally {
+        }
+        finally {
             em.close();
         }
         if(sortedList.size()==0){
@@ -173,7 +163,6 @@ public class StockFacade {
             if(firstOrSecond.equals("first")){
                 return sortedList;
             }else{
-
             return sortedList.subList(0, 5);
             }
         }
@@ -181,7 +170,6 @@ public class StockFacade {
 
     public String makeChart(ArrayList<DailyStockRating> jsonArrayTimes) {
         ChartMaker chartMaker = new ChartMaker();
-
         return chartMaker.draw(jsonArrayTimes);
     }
 
@@ -202,6 +190,7 @@ public class StockFacade {
         em.merge(user);
         em.getTransaction().commit();
         em.close();
+
         return "Success deleting: " + ticker +" from user: " + username;
     }
 

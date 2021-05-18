@@ -44,23 +44,26 @@ public class NotificationsFacade {
     public void AddNotiThreshToDb(String username, String ticker, int valueInPercent) {
         EntityManager em = emf.createEntityManager();
         EntityManager em2 = emf.createEntityManager();
+
         UserFacade userFacade = UserFacade.getUserFacade(emf);
         em2.getTransaction().begin();
         User user = userFacade.findUserByUsername(username);
         em2.getTransaction().commit();
         em2.close();
+
         UserStockNoti stocksForUpdate = null;
         Stock stock = em.find(Stock.class, ticker);
         StockFacade sF = StockFacade.getFacadeExample(emf);
+
         double currentClosingValue = sF.getCurrentClosingValue(ticker);
+
         for (int i = 0; i < user.getStockList().size(); i++) {
             if (user.getStockList().get(i).getStockTicker().equals(ticker))
-                System.out.println("USER: " + user.getUsername());
-            System.out.println(" STOCK: " + stock.getStockTicker());
-            System.out.println(" VALUE " + valueInPercent);
             stocksForUpdate = (new UserStockNoti(user, stock, valueInPercent, currentClosingValue));
         }
+
         UserStockNoti foundStockNoti = em.find(UserStockNoti.class, username + ticker);
+
         if (foundStockNoti != null) {
             foundStockNoti = stocksForUpdate;
             try {
@@ -152,13 +155,13 @@ public class NotificationsFacade {
     public void addNotiToDB(double rate, String ticker, String date, User user) {
         EntityManager em = emf.createEntityManager();
         String messageInput = "";
-        if(rate>0){
+        if (rate > 0) {
             messageInput = " has gained over: ";
         } else {
             messageInput = " has dropped below: ";
         }
-        String message = ticker + messageInput + rate +"% today";
-        boolean status = true; //This is the same as "new"
+        String message = ticker + messageInput + rate + "% today";
+        boolean status = true; // This is the same as "new"
         Stock stock = em.find(Stock.class, ticker);
         Notifications noti = new Notifications(date, status, message, stock);
 
@@ -168,13 +171,13 @@ public class NotificationsFacade {
         foundNoti.setParameter("message", message);
         List<Notifications> checkWithList = foundNoti.getResultList();
 
-        if(checkWithList.size()!=0) {
+        if (checkWithList.size() != 0) {
             user.addNoti(noti);
             em.getTransaction().begin();
             em.persist(noti);
             em.merge(user);
             em.getTransaction().commit();
-        } else if(checkWithList.size()==0){
+        } else if (checkWithList.size() == 0) {
             System.out.println("Noti already exists");
         }
         em.close();
@@ -182,7 +185,6 @@ public class NotificationsFacade {
 
     public List<Notifications> displayUsersNotis(String username) {
         EntityManager em = emf.createEntityManager();
-        String messageInput = "";
 
         TypedQuery<Notifications> getNotis = em.createQuery("SELECT n FROM Notifications n JOIN User  u where u.username = :username", Notifications.class);
         getNotis.setParameter("username", username);

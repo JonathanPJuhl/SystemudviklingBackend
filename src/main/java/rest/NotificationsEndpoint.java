@@ -21,7 +21,6 @@ import java.util.List;
 public class NotificationsEndpoint {
 
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory();
-       
     private static final NotificationsFacade FACADE =  NotificationsFacade.getFacadeExample(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -46,41 +45,32 @@ public class NotificationsEndpoint {
     @Path("/addnotifications/{userStockNoti}")
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
-    public String addNoti(@PathParam("userStockNoti") String userStockNoti){
-
+    public void addNoti(@PathParam("userStockNoti") String userStockNoti){
         String[] all = userStockNoti.split(",");
         String username = all[0];
         String stock = all[1];
         int price = Integer.parseInt(all[2]);
-
         FACADE.AddNotiThreshToDb(username, stock, price);
-
-        return "WUHU";
     }
 
     @GET
     @Path("/checkifusershouldgetnoti")
     @Produces({MediaType.APPLICATION_JSON})
-    public String checkIfUserShouldGetNoti(){
+    public void checkIfUserShouldGetNoti(){
         FACADE.checkThresholds();
-        return "success";
     }
 
     @GET
     @Path("/markAsRead/{idAndStatus}")
     public void markNotiAsRead(@PathParam("idAndStatus") String idAndStatus){
-        System.out.println("STRING FROM WEB " + idAndStatus);
         String[] idAndStat = idAndStatus.split(",");
         int id = Integer.parseInt(idAndStat[0]);
         boolean status = Boolean.parseBoolean(idAndStat[1]);
-        System.out.println("ID " + id);
-        System.out.println("STATUS " + status);
         FACADE.updateNotiStatus(id, status);
     }
     @GET
     @Path("/delete/{id}")
     public void deleteNoti(@PathParam("id") int id){
-
         FACADE.deleteNoti(id);
     }
 

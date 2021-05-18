@@ -40,6 +40,5 @@ public class StockSymbol implements Serializable {
     public String getSymbol() {
         return symbol;
     }
-    //TODO Change when password is hashed
 
 }
