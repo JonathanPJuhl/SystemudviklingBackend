@@ -58,6 +58,7 @@ public class NotificationsFacade {
         double currentClosingValue = sF.getCurrentClosingValue(ticker);
 
         for (int i = 0; i < user.getStockList().size(); i++) {
+
             if (user.getStockList().get(i).getStockTicker().equals(ticker))
             stocksForUpdate = (new UserStockNoti(user, stock, valueInPercent, currentClosingValue));
         }
@@ -125,21 +126,23 @@ public class NotificationsFacade {
 
                     //Checks to find the stockticker in dailyratings
                     if (dailyratings.get(h).getStockTicker().equals(ticker)) {
+
                         double rate = 0.0;
                         //Calculates change from yesterdays close in percent
                         if (close > 0) {
+                            System.out.println("LINJE 133 NOTIFACADE" + dailyratings.get(h).getClose() +" +++"+close);
                             rate = 100 - (dailyratings.get(h).getClose() / close) * 100;
                         } else {
                             rate = 100 + (dailyratings.get(h).getClose() / close) * 100;
                         }
                         //Checks for positive spike
                         if (rate > 0) {
-                            System.out.println("r + t " + rate + "    " + thresh);
                             if (rate > thresh) {
                                 addNotiToDB(rate, ticker, dailyratings.get(h).getDate().substring(0, 10), user);
                             }
                             //Checks for negative spike
                         } else {
+                            System.out.println("LINJE 145 NOTIFACADE r + t " + rate + "    " + thresh);
                             if (rate < (-thresh)) {
                                 addNotiToDB(rate, ticker, dailyratings.get(h).getDate().substring(0, 10), user);
                             }

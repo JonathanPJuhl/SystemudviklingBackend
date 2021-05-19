@@ -1,36 +1,34 @@
 
 package facades;
 
-import entities.Role;
-import entities.Stock;
-import entities.StockSymbol;
-import entities.User;
+import entities.*;
 import org.junit.jupiter.api.*;
 import security.errorhandling.AuthenticationException;
 import utils.EMF_Creator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //Uncomment the line below, to temporarily disable this test
 @Disabled
-public class StockFacadeTest {
+public class NotficationFacadeTest {
 
     private static EntityManagerFactory emf;
-    private static StockFacade facade;
+    private static StockFacade sfacade;
+    private static NotificationsFacade facade;
 
-    public StockFacadeTest() {
+    public NotficationFacadeTest() {
     }
 
     @BeforeAll
     public static void setUpClass() {
        emf = EMF_Creator.createEntityManagerFactoryForTest();
-       facade = StockFacade.getFacadeExample(emf);
+       sfacade = StockFacade.getFacadeExample(emf);
+       facade = NotificationsFacade.getFacadeExample(emf);
     }
 
     @AfterAll
@@ -43,10 +41,19 @@ public class StockFacadeTest {
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
+        ArrayList<String> tickers = new ArrayList<>();
+        tickers.add("AAPL");
+        tickers.add("MSFT");
+        tickers.add("VOD");
+        tickers.add("FB");
+        tickers.add("GOOGL");
+        sfacade.addStockTickersToDB(tickers);
         try {
             em.getTransaction().begin();
             em.createQuery("delete from User").executeUpdate();
             em.createQuery("delete from Role").executeUpdate();
+
+
             Role userRole = new Role("user");
             Role adminRole = new Role("admin");
             User user = new User("user", "test");
@@ -70,34 +77,39 @@ public class StockFacadeTest {
 
     @AfterEach
     public void tearDown() {
-//        Remove any data after each test was run
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        em.createQuery("delete from StockSymbol").executeUpdate();
+        em.getTransaction().commit();
+        em.close();
     }
 
-    @Test
-    public void testGetVerifiedUserShouldWork() throws AuthenticationException {
-       /* User user = facade.getVeryfiedUser("user", "test");
-        assertTrue(user!=null);*/
-    }
 
     @Test
-    public void testGetVerifiedUserShouldntWork()  {
-      /*  assertThrows(security.errorhandling.AuthenticationException.class, () -> facade.getVeryfiedUser("user", "ae"));*/
+    public void tickersShouldBeAddedToDBAndFound(){
+        List<StockSymbol> tickers = sfacade.getAllStockTickers();
+        assertTrue(tickers.size()==5);
     }
     @Test
-    public void tickerShouldBeAddedToDBAndFound(){
-        facade.AddToDb("AAPL", "user");
-        List<String> pins = facade.getPinnedStocks("user");
-        assertTrue(pins.size()==1 && pins.get(0).equals("AAPL"));
+    public void dailyRatingsShouldBeAddedToDB(){
+        List<DailyStockRating> dsr = sfacade.returnDailyStockRatings("ASC");
+        assertTrue(dsr.size()!=0);
     }
+
+
     @Test
-    public void addAndGetListOfTickers(){
-        ArrayList<String> s = new ArrayList<>();
-        s.add("AAPL");
-        s.add("MSFT");
-        facade.addStockTickersToDB(s);
-        List<StockSymbol> pins = facade.getAllStockTickers();
-        assertTrue(pins.size()==2);
+    public void addNotiThreshAndCheckIt(){
+        EntityManager em = emf.createEntityManager();
+        sfacade.AddToDb("AAPL", "user");
+        sfacade.returnDailyStockRatings("ASC");
+        facade.AddNotiThreshToDb("user", "AAPL", 5);
+
+
+        facade.checkThresholds();
+        List<Notifications> notis = facade.displayUsersNotis("user");
+        assertTrue(notis.size()==1);
     }
+    /*
     @Test
     public void tickerShouldBeDeletedFromUser(){
         facade.AddToDb("AAPL", "user");
@@ -107,7 +119,7 @@ public class StockFacadeTest {
         List<String> pins2 = facade.getPinnedStocks("user");
         assertTrue(pins2.size()==0);
 
-    }
+    }*/
 
 }
 

@@ -1,4 +1,4 @@
-/*
+
 package IntegrationTests;
 
 import entities.Role;
@@ -133,15 +133,6 @@ public class LoginIntegrationTest {
                 .assertThat()
                 .statusCode(401);
                // .body("msg", equalTo("Hello to (admin) User: admin"));
-       given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/5things/teachersSolution").then()
-                .statusCode(200)
-                .assertThat()
-                .body("name", hasItem("Luke Skywalker"));
 
     }
     @Test
@@ -165,18 +156,10 @@ public class LoginIntegrationTest {
                 .assertThat()
                 .statusCode(401);
 
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/5things/teachersSolution").then()
-                .statusCode(200)
-                .assertThat()
-                .body("height", hasItem("202"));
 
 
     }
+
     @Test
     public void logonAdminUserProcessTest(){
         login("user_admin", "test");
@@ -198,17 +181,8 @@ public class LoginIntegrationTest {
                 .assertThat()
                 .statusCode(200)
                 .body("msg", equalTo("Hello to User: user_admin"));
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/5things/teachersSolution").then()
-                .statusCode(200)
-                .assertThat()
-                .body("homeworld", hasItem("http://swapi.dev/api/planets/2/"));
 
 
     }
 }
-*/
+

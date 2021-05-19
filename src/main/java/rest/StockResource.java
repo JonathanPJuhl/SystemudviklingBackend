@@ -100,8 +100,11 @@ public class StockResource {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return pin;
+        if(pin!=""){
+        return pin;}
+        else{
+            return "{\"resp\": \"No pinned stocks found\"}";
+        }
     }
 
     public String fetchData(String _url) throws IOException {
@@ -140,7 +143,7 @@ public class StockResource {
         String user = thisUser[1];
         System.out.println(ticker + "   " + user);
         facade.AddToDb(ticker, user);
-        return "Added stock to pins";
+        return "\"msg\":\"Added stock to pins\"";
     }
 
 
@@ -200,9 +203,16 @@ public class StockResource {
 
         return GSON.toJson(facade.makeChart(jsonArrayTimes));
     }
+    @GET
+    @Path("filldbwithdailyratings/{ascordesc}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) {
+        return GSON.toJson(facade.returnDailyStockRatings(ascOrDesc));
+    }
 
     //SHOULD BE FUNCTIONAL
-    @GET
+    /*@GET
     @Path("filldbwithdailyratings/{ascordesc}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -288,7 +298,7 @@ public class StockResource {
         } else {
             return GSON.toJson(facade.findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last"));
         }
-    }
+    }*/
 
     @GET
     @Path("/deletePin/{userTicker}")

@@ -1,20 +1,24 @@
 package facades;
 
 import SVG.ChartMaker;
-import com.nimbusds.jose.shaded.json.JSONObject;
 import entities.DailyStockRating;
 import entities.Stock;
 import entities.StockSymbol;
 import entities.User;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  *
@@ -152,6 +156,7 @@ public class StockFacade {
                     findAllDailyStocksSorted = em.createQuery("SELECT d from DailyStockRating d ORDER BY d.rate DESC", DailyStockRating.class);
                 }
                 sortedList = findAllDailyStocksSorted.getResultList();
+            System.out.println(sortedList);
                 em.getTransaction().commit();
         }
         finally {
@@ -199,5 +204,107 @@ public class StockFacade {
         DailyStockRating dSR = em.find(DailyStockRating.class, ticker);
         double close = dSR.getClose();
         return close;
+    }
+
+    public List<DailyStockRating> returnDailyStockRatings(String ascOrDesc){
+        String accessKeyMarketstack = "80f90dbc8de86858f292e8e8ff76293f";
+        String symbols = "";
+        List<StockSymbol> tickers = getAllStockTickers();
+        for (int i = 0; i < tickers.size(); i++) {
+            if (i != tickers.size() - 1) {
+                symbols += tickers.get(i) + ",";
+            } else {
+                symbols += tickers.get(i);
+            }
+
+        }
+
+        List<DailyStockRating> dR = findFiveHighestGainsOrDropsFromDB("ASC", "first");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        Calendar rightNow = Calendar.getInstance();
+        int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+        //Using hour because stockdata is not released until 5 in the afternoon in the us (therefore 23 in  DK)
+        String thisDay = LocalDate.now().format(formatter);
+
+        //Checks if there's been fetched to day already , if there has, it won't do it again
+        if (dR.size() == 0 || (hour >= 23 && !dR.get(0).getDate().equals(thisDay))) {
+            String data = "";
+            try {
+                data = fetchData("https://api.marketstack.com/v1/eod/latest?access_key=" + accessKeyMarketstack + "&symbols=" + symbols);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            org.json.JSONObject json = new org.json.JSONObject(data);
+            JSONArray jsonArray = json.getJSONArray("data");
+
+            ArrayList<DailyStockRating> jsonArrayTimes = new ArrayList<>();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject item = jsonArray.getJSONObject(i);
+                String symb = (String) item.get("symbol");
+                String date = (String) item.get("date");
+                double close = (double) item.get("close");
+                if (symb.contains(".")) {
+                    jsonArray.remove(i);
+                }
+                if (!symb.contains(".")) {
+                    jsonArrayTimes.add(new DailyStockRating(symb, date, close));
+                }
+            }
+            //sorting the two arrays to get them in same order, before claculating the daily rate
+            Collections.sort(dR, DailyStockRating.stockNameComparator);
+            Collections.sort(jsonArrayTimes, DailyStockRating.stockNameComparator);
+            ArrayList<DailyStockRating> jsonArrayTimesFittedForCompare = new ArrayList<>();
+            ArrayList<DailyStockRating> finishedArrayForDB = new ArrayList<>();
+            if(dR.size()==0){ addDailyStockRatingsToDB(jsonArrayTimes);}
+
+
+            for (int i = 0; i < dR.size(); i++) {
+                for (int j = 0; j < dR.size(); j++) {
+                    if (jsonArrayTimes.get(i).getStockTicker().equals(dR.get(j).getStockTicker())) {
+                        jsonArrayTimesFittedForCompare.add(jsonArrayTimes.get(i));
+                    }
+                }
+            }
+
+            if (dR.size() == 0) {
+                for (int i = 0; i < jsonArrayTimesFittedForCompare.size(); i++) {
+                    double closeDB = jsonArrayTimesFittedForCompare.get(i).getClose();
+                    double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
+                    double rate = 100 - ((closeToday / closeDB) * 100.00);
+                    DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
+                    finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
+                }
+            } else {
+                for (int i = 0; i < dR.size(); i++) {
+
+                    double closeDB = dR.get(i).getClose();
+                    double closeToday = jsonArrayTimesFittedForCompare.get(i).getClose();
+                    double rate = 100 - ((closeToday / closeDB) * 100.00);
+                    DailyStockRating forAdding = jsonArrayTimesFittedForCompare.get(i);
+                    finishedArrayForDB.add(new DailyStockRating(forAdding.getStockTicker(), forAdding.getDate(), forAdding.getClose(), rate));
+                }
+            }
+           addDailyStockRatingsToDB(finishedArrayForDB);
+            return findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last");
+        } else {
+            return findFiveHighestGainsOrDropsFromDB(ascOrDesc, "last");
+        }
+    }
+    public String fetchData(String _url) throws IOException {
+        URL url = new URL(_url);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Accept", "application/json");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
+        Scanner scan = new Scanner(con.getInputStream());
+        String jsonStr = "";
+        while (scan.hasNext()) {
+            jsonStr += scan.nextLine();
+        }
+        scan.close();
+        return jsonStr;
     }
 }
