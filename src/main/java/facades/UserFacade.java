@@ -80,5 +80,15 @@ public class UserFacade {
         return userFound;
     }
 
+    public void updatePasswordForUser(User user) {
+        EntityManager em = emf.createEntityManager();
+        User foundUser = findUserByUsername(user.getUsername());
+        foundUser.setPassword(user.getPassword());
+        em.getTransaction().begin();
+        em.merge(foundUser);
+        em.getTransaction().commit();
+        em.close();
+
     }
+}
 

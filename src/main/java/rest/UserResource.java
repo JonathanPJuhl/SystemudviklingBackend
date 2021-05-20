@@ -2,10 +2,12 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import entities.ResetPasswordDTO;
 import entities.User;
 import entities.UserDTO;
 import facades.UserFacade;
 import utils.EMF_Creator;
+import utils.MailSystem;
 import utils.SetupTestUsers;
 
 import javax.annotation.security.RolesAllowed;
@@ -52,6 +54,27 @@ public class UserResource {
         User userForCreation = GSON.fromJson(user, User.class);
         User userForReturn = facade.createUser(userForCreation);
         return GSON.toJson(userForReturn);
+    }
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("resetpass")
+    public String resetPW(String emailAndAnswer) {
+        ResetPasswordDTO reset = GSON.fromJson(emailAndAnswer, ResetPasswordDTO.class);
+        MailSystem ms = new MailSystem();
+        System.out.println(reset.toString());
+        ms.resetPW(reset);
+        return "{\"resp\":\"success\"}";
+    }
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("newpassword")
+    public String createNewPass(String emailAndNewPass) {
+        User user = GSON.fromJson(emailAndNewPass, User.class);
+        System.out.println(user.toString());
+        facade.updatePasswordForUser(user);
+        return "{\"resp\":\"success\"}";
     }
 
     @GET

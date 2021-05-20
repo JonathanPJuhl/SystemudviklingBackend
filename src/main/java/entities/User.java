@@ -80,6 +80,10 @@ public class User implements Serializable {
         return( BCrypt.checkpw(pw, password));
     }
 
+   public boolean verifySecurityAnswer(String ans){
+        return( BCrypt.checkpw(ans, answer));
+    }
+
   public User(String username, String password) {
     this.username = username;
     this.password = BCrypt.hashpw(password, BCrypt.gensalt());
@@ -106,7 +110,7 @@ public class User implements Serializable {
   }
 
   public void setPassword(String userPass) {
-    this.password = userPass;
+    this.password = BCrypt.hashpw(userPass, BCrypt.gensalt());
   }
 
   public List<Role> getRoleList() {

@@ -8,4 +8,5 @@ public class UserDTO {
         this.username = username;
         this.recoveryquestion = recoveryquestion;
     }
+
 }

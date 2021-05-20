@@ -70,7 +70,9 @@ public class Notifications implements Serializable {
     public int getMessageID() {
         return messageID;
     }
-
+    public void addUser(User user){
+        userList.add(user);
+    }
     public String getDate() {
         return date;
     }

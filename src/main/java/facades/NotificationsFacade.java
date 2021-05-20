@@ -177,6 +177,8 @@ public class NotificationsFacade {
         System.out.println(" SIZE : " + checkWithList.size());
         if (checkWithList.size() == 0) {
             user.addNoti(noti);
+            //This is new, test it
+            //noti.addUser(user);
             em.getTransaction().begin();
             em.persist(noti);
             em.merge(user);
@@ -190,7 +192,7 @@ public class NotificationsFacade {
     public List<Notifications> displayUsersNotis(String username) {
         EntityManager em = emf.createEntityManager();
 
-        TypedQuery<Notifications> getNotis = em.createQuery("SELECT n FROM Notifications n JOIN User  u where u.username = :username", Notifications.class);
+        TypedQuery<Notifications> getNotis = em.createQuery("SELECT n FROM Notifications n join n.userList u where u.username = :username ", Notifications.class);
         getNotis.setParameter("username", username);
 
         List<Notifications> notiList = getNotis.getResultList();
