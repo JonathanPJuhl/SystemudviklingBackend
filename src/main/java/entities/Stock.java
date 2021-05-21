@@ -1,13 +1,10 @@
 package entities;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import org.mindrot.jbcrypt.BCrypt;
 
 @Entity
 @Table(name = "stocks")
