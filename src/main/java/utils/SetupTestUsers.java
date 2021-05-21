@@ -2,6 +2,7 @@ package utils;
 
 
 import entities.Role;
+import entities.Stock;
 import entities.User;
 import facades.StockFacade;
 import rest.StockResource;
@@ -30,6 +31,8 @@ public class SetupTestUsers {
     em.persist(adminRole);
     em.persist(user);
     sR.fillDb();
+   StockFacade sF = StockFacade.getFacadeExample(emf);
+   sF.timeCheckForLocal("fillForPopulate");
     user.addRole(userRole);
     admin.addRole(adminRole);
     both.addRole(userRole);

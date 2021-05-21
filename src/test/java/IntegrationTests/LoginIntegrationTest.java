@@ -10,10 +10,7 @@ import org.eclipse.persistence.jpa.jpql.Assert;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import rest.ApplicationConfig;
 import utils.EMF_Creator;
 
@@ -30,7 +27,7 @@ import static org.hamcrest.Matchers.*;
 public class LoginIntegrationTest {
 
     private static final int SERVER_PORT = 7777;
-    private static final String SERVER_URL = "http://localhost/api";
+    private static final String SERVER_URL = "http://localhost/sys/api";
 
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
@@ -110,31 +107,6 @@ public class LoginIntegrationTest {
 
     }
 
-
-
-    @Test
-    public void logonAdminProcessTest(){
-        login("admin", "test");
-        Assert.isTrue(securityToken!=null, "checking if user has logon token");
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/admin").then()
-                .statusCode(200)
-                .body("msg", equalTo("Hello to (admin) User: admin"));
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/user").then()
-                .assertThat()
-                .statusCode(401);
-               // .body("msg", equalTo("Hello to (admin) User: admin"));
-
-    }
     @Test
     public void logonUserProcessTest(){
         login("user", "test");
@@ -144,45 +116,14 @@ public class LoginIntegrationTest {
                 .accept(ContentType.JSON)
                 .header("x-access-token", securityToken)
                 .when()
-                .get("/info/user").then()
+                .get("/user/user").then()
                 .statusCode(200)
-                .body("msg", equalTo("Hello to User: user"));
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/admin").then()
-                .assertThat()
-                .statusCode(401);
+                .body("msg", equalTo("Welcome user"));
+
 
 
 
     }
 
-    @Test
-    public void logonAdminUserProcessTest(){
-        login("user_admin", "test");
-        Assert.isTrue(securityToken!=null, "checking if user has logon token");
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/admin").then()
-                .statusCode(200)
-                .body("msg", equalTo("Hello to (admin) User: user_admin"));
-        given()
-                .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/user").then()
-                .assertThat()
-                .statusCode(200)
-                .body("msg", equalTo("Hello to User: user_admin"));
-
-
-    }
 }
 

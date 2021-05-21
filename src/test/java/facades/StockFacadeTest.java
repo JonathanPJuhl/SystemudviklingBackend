@@ -89,7 +89,7 @@ public class StockFacadeTest {
     }
 
     @Test
-    public void testGetClosingValueShouldReturnRightValue() throws AuthenticationException {
+    public void testGetClosingValueShouldReturnRightValue() throws AuthenticationException, InterruptedException {
         EntityManager em = emf.createEntityManager();
         facade.returnDailyStockRatings("ASC");
         DailyStockRating dsr =  em.find(DailyStockRating.class, "AAPL");
@@ -103,7 +103,7 @@ public class StockFacadeTest {
        assertEquals(value, trueClose);
     }
     @Test
-    public void findFiveHighestGainsAndDropsShouldMakeRightLists(){
+    public void findFiveHighestGainsAndDropsShouldMakeRightLists() throws InterruptedException {
         EntityManager em = emf.createEntityManager();
         facade.returnDailyStockRatings("ASC");
 

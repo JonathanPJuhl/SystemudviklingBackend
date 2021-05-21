@@ -207,7 +207,7 @@ public class StockResource {
     @Path("filldbwithdailyratings/{ascordesc}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) {
+    public String fillDbWithDailyStockRatings(@PathParam("ascordesc") String ascOrDesc) throws InterruptedException {
         return GSON.toJson(facade.returnDailyStockRatings(ascOrDesc));
     }
 

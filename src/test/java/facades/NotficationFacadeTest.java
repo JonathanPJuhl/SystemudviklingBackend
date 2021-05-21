@@ -111,7 +111,7 @@ public class NotficationFacadeTest {
 
     @Test
     @Order(2)
-    public void dailyRatingsShouldBeAddedToDB(){
+    public void dailyRatingsShouldBeAddedToDB() throws InterruptedException {
         List<DailyStockRating> dsr = sfacade.returnDailyStockRatings("ASC");
         assertTrue(dsr.size()!=0);
     }
@@ -120,7 +120,7 @@ public class NotficationFacadeTest {
 
     @Test
     @Order(2)
-    public void addNotiThreshAndCheckIt(){
+    public void addNotiThreshAndCheckIt() throws InterruptedException {
         EntityManager em = emf.createEntityManager();
         sfacade.AddToDb("AAPL", "user");
         sfacade.returnDailyStockRatings("ASC");
