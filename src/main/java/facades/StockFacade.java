@@ -124,8 +124,9 @@ public class StockFacade {
        for (int i = 0; i<fromJson.size(); i++){
            StockSymbol symbol = new StockSymbol(fromJson.get(i));
            em.persist(symbol);
-       }}finally {
-            em.getTransaction().commit();
+
+       } em.getTransaction().commit();}finally {
+
             em.close();
         }
 
