@@ -75,7 +75,7 @@ public class MailSystem {
                 // Now set the actual message
                // message.setText("Please go to: localhost:3000/resetPW/"+recipient+" to reset your password");
                 message.setContent(
-                        "<p>Please click: <p> <a href=\"www.ipwithme.com/sys-frontend/resetPW/"+recipient+"\">Here</a><p> to reset your password</p><p>Kind regards, JJStocks</p>",
+                        "<p>Please click: <p> <a href=\"www.ipwithme.com/sys-frontend/#/resetPW/"+recipient+"\">Here</a><p> to reset your password</p><p>Kind regards, JJStocks</p>",
                         "text/html");
 
                 System.out.println("sending...");
